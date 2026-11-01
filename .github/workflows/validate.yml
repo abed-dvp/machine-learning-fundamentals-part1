@@ -1,7 +1,7 @@
 name: Validate Python Codelab
 on:
   push:
-    branches: [main, three-lectures-codelab]
+    branches: [main, three-lectures-codelab, inline-practice-v2]
   pull_request:
     branches: [main]
 jobs:
