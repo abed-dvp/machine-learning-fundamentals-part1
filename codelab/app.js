@@ -1,0 +1,501 @@
+'use strict';
+
+const steps = window.CODELAB_STEPS;
+const modules = window.CODELAB_MODULES;
+const storageKey = 'abed-codelab-mlf-part1-source-v3';
+const themeKey = 'abed-codelab-theme';
+
+let currentIndex = 0;
+let state = loadState();
+let pyodide = null;
+let pythonReady = false;
+
+const els = {
+  sidebar: document.getElementById('sidebar'),
+  menuButton: document.getElementById('menuButton'),
+  stepNav: document.getElementById('stepNav'),
+  progressBar: document.getElementById('progressBar'),
+  progressText: document.getElementById('progressText'),
+  stepNumber: document.getElementById('stepNumber'),
+  videoTime: document.getElementById('videoTime'),
+  lessonTitle: document.getElementById('lessonTitle'),
+  lessonIntro: document.getElementById('lessonIntro'),
+  learnBullets: document.getElementById('learnBullets'),
+  exampleCode: document.getElementById('exampleCode'),
+  expectedOutput: document.getElementById('expectedOutput'),
+  challengeText: document.getElementById('challengeText'),
+  starterCode: document.getElementById('starterCode'),
+  solutionPanel: document.getElementById('solutionPanel'),
+  solutionCode: document.getElementById('solutionCode'),
+  solutionButton: document.getElementById('solutionButton'),
+  resetCode: document.getElementById('resetCode'),
+  runPython: document.getElementById('runPython'),
+  checkAnswer: document.getElementById('checkAnswer'),
+  clearOutput: document.getElementById('clearOutput'),
+  runOutput: document.getElementById('runOutput'),
+  executionState: document.getElementById('executionState'),
+  checkFeedback: document.getElementById('checkFeedback'),
+  runtimeStatus: document.getElementById('runtimeStatus'),
+  runtimeDot: document.getElementById('runtimeDot'),
+  runtimeText: document.getElementById('runtimeText'),
+  prevButton: document.getElementById('prevButton'),
+  nextButton: document.getElementById('nextButton'),
+  completeButton: document.getElementById('completeButton'),
+  resetProgress: document.getElementById('resetProgress'),
+  themeButton: document.getElementById('themeButton')
+};
+
+const PYTHON_HELPER = `
+import ast
+import contextlib
+import io
+import json
+import traceback
+
+def __abed_run(code, test_code=""):
+    namespace = {"__name__": "__main__"}
+    stdout = io.StringIO()
+    error_type = None
+    error_text = ""
+    test_error = ""
+
+    try:
+        tree = ast.parse(code, filename="<learner>", mode="exec")
+
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stdout):
+            if tree.body and isinstance(tree.body[-1], ast.Expr):
+                last_expr = tree.body.pop()
+
+                if tree.body:
+                    exec(compile(tree, "<learner>", "exec"), namespace)
+
+                value = eval(
+                    compile(ast.Expression(last_expr.value), "<learner>", "eval"),
+                    namespace,
+                )
+
+                if value is not None:
+                    print(repr(value))
+            else:
+                exec(compile(tree, "<learner>", "exec"), namespace)
+
+    except BaseException as exc:
+        error_type = type(exc).__name__
+        error_text = "".join(
+            traceback.format_exception_only(type(exc), exc)
+        ).strip()
+
+    namespace["__output__"] = stdout.getvalue()
+
+    if test_code and error_type is None:
+        try:
+            exec(compile(test_code, "<checks>", "exec"), namespace)
+        except BaseException as exc:
+            test_error = "".join(
+                traceback.format_exception_only(type(exc), exc)
+            ).strip()
+
+    return {
+        "output": stdout.getvalue(),
+        "error_type": error_type,
+        "error": error_text,
+        "test_error": test_error,
+    }
+`;
+
+async function initPythonRuntime() {
+  if (pythonReady && pyodide) return pyodide;
+  try {
+    els.runtimeText.textContent = 'Loading Python (first run needs internet)…';
+    els.executionState.textContent = 'Loading Python…';
+    if (typeof window.loadPyodide !== 'function') {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = './vendor/pyodide/pyodide.js';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Pyodide runtime file was not published. Check the Pages deployment and /codelab/vendor/pyodide/ directory.'));
+        document.head.appendChild(script);
+      });
+    }
+    pyodide = await window.loadPyodide({indexURL:'./vendor/pyodide/'});
+    pyodide.setStdin({ error: true });
+    pyodide.runPython(PYTHON_HELPER);
+    const version = pyodide.runPython('import sys; sys.version.split()[0]');
+    pythonReady = true;
+    els.runtimeDot.className = 'runtime-dot ready';
+    els.runtimeText.textContent = 'Python ' + version + ' ready in browser';
+    els.executionState.textContent = 'Ready';
+    return pyodide;
+  } catch (error) {
+    pythonReady = false;
+    const detail = error?.message || String(error);
+    els.runtimeDot.className = 'runtime-dot error';
+    els.runtimeText.textContent = 'Python runtime unavailable — ' + detail;
+    els.executionState.textContent = 'Runtime error';
+    throw error;
+  }
+}
+
+async function executePython(code, testCode) {
+  if (!pythonReady || !pyodide) await initPythonRuntime();
+  // All lessons use the Python standard library. No extra packages are required.
+  pyodide.globals.set('__abed_user_code', code);
+  pyodide.globals.set('__abed_test_code', testCode || '');
+  try {
+    const jsonResult = await pyodide.runPythonAsync('json.dumps(__abed_run(__abed_user_code, __abed_test_code))');
+    return JSON.parse(String(jsonResult));
+  } finally {
+    try { pyodide.globals.delete('__abed_user_code'); pyodide.globals.delete('__abed_test_code'); } catch {}
+  }
+}
+
+function setRunning(isRunning, label) {
+  els.runPython.disabled = isRunning;
+  els.checkAnswer.disabled = isRunning;
+  els.executionState.textContent = label || (isRunning ? 'Running…' : 'Ready');
+}
+
+function formatExecution(result) {
+  const parts = [];
+  if (result.output) parts.push(result.output.replace(/\s+$/, ''));
+  if (result.error) parts.push(result.error);
+  return parts.join('\n') || '(no output)';
+}
+
+function clearFeedback() {
+  els.checkFeedback.hidden = true;
+  els.checkFeedback.className = 'check-feedback';
+  els.checkFeedback.textContent = '';
+}
+
+function loadState() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    return {
+      completed: parsed.completed || {},
+      code: parsed.code || {}
+    };
+  } catch {
+    return { completed: {}, code: {} };
+  }
+}
+
+function saveState() {
+  localStorage.setItem(storageKey, JSON.stringify(state));
+}
+
+function secondsFromTimestamp(value) {
+  const parts = value.split(':').map(Number);
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  return parts[0] * 3600 + parts[1] * 60 + parts[2];
+}
+
+function renderNav() {
+  els.stepNav.innerHTML = '';
+
+  steps.forEach(function(step, index) {
+    if (index === 0 || steps[index-1].unit !== step.unit) {
+      const heading = document.createElement('div');
+      heading.className = 'module-divider';
+      heading.textContent = 'Lecture ' + step.unit + ' · ' + modules[step.unit-1].title;
+      els.stepNav.appendChild(heading);
+    }
+    const button = document.createElement('button');
+    button.className = 'step-link';
+
+    if (index === currentIndex) button.classList.add('active');
+    if (state.completed[step.id]) button.classList.add('complete');
+
+    const marker = state.completed[step.id] ? '✓' : String(step.id);
+
+    button.innerHTML =
+      '<span class="step-index">' + marker + '</span>' +
+      '<span class="step-title">' + escapeHtml(step.title) + '</span>' +
+      '<span class="step-time">' + escapeHtml(step.time) + '</span>';
+
+    button.addEventListener('click', function() {
+      saveCurrentCode();
+      currentIndex = index;
+      render();
+      els.sidebar.classList.remove('open');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    els.stepNav.appendChild(button);
+  });
+}
+
+function renderLesson() {
+  const step = steps[currentIndex];
+
+  els.stepNumber.textContent = 'Step ' + step.id + ' of ' + steps.length;
+  els.videoTime.textContent = step.slides + ' · ' + step.time;
+  els.lessonTitle.textContent = step.title;
+  els.lessonIntro.textContent = step.learn;
+
+  els.learnBullets.innerHTML = '';
+  step.bullets.forEach(function(item) {
+    const li = document.createElement('li');
+    li.textContent = item;
+    els.learnBullets.appendChild(li);
+  });
+
+  els.exampleCode.textContent = step.example;
+  els.expectedOutput.textContent = step.output;
+  els.challengeText.textContent = step.challenge;
+  els.solutionCode.textContent = step.solution;
+  // Lessons stay focused on the slide topic; no separate takeaway card.
+
+  const saved = state.code[step.id];
+  els.starterCode.value = typeof saved === 'string' ? saved : step.starter;
+
+  els.solutionPanel.hidden = true;
+  els.solutionButton.textContent = 'Show solution';
+  clearFeedback();
+
+  els.runOutput.classList.remove('error-output');
+  els.runOutput.textContent = pythonReady
+    ? 'Run your Python code to see the output.'
+    : 'Click Run Python to load the browser runtime.';
+  els.executionState.textContent = pythonReady ? 'Ready' : 'Ready to load';
+
+  els.prevButton.disabled = currentIndex === 0;
+  els.nextButton.disabled = currentIndex === steps.length - 1;
+
+  const done = Boolean(state.completed[step.id]);
+  els.completeButton.textContent = done ? 'Completed ✓' : 'Mark step complete';
+  els.completeButton.classList.toggle('completed', done);
+}
+
+function renderProgress() {
+  const completed = steps.filter(function(step) {
+    return state.completed[step.id];
+  }).length;
+
+  const percent = Math.round((completed / steps.length) * 100);
+  els.progressBar.style.width = percent + '%';
+  els.progressText.textContent =
+    completed + ' of ' + steps.length + ' complete · ' + percent + '%';
+}
+
+function render() {
+  renderNav();
+  renderLesson();
+  renderProgress();
+}
+
+function saveCurrentCode() {
+  const step = steps[currentIndex];
+  state.code[step.id] = els.starterCode.value;
+  saveState();
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+els.starterCode.addEventListener('input', saveCurrentCode);
+
+els.runPython.addEventListener('click', async function() {
+  clearFeedback();
+  saveCurrentCode();
+  setRunning(true, 'Running…');
+  els.runOutput.classList.remove('error-output');
+  els.runOutput.textContent = 'Running Python…';
+
+  await new Promise(function(resolve) {
+    requestAnimationFrame(resolve);
+  });
+
+  try {
+    const result = await executePython(els.starterCode.value, '');
+    els.runOutput.textContent = formatExecution(result);
+    els.runOutput.classList.toggle('error-output', Boolean(result.error));
+    els.executionState.textContent = result.error ? 'Finished with error' : 'Finished';
+  } catch (error) {
+    els.runOutput.textContent = error.message || String(error);
+    els.runOutput.classList.add('error-output');
+    els.executionState.textContent = 'Run failed';
+  } finally {
+    setRunning(false);
+  }
+});
+
+els.checkAnswer.addEventListener('click', async function() {
+  const step = steps[currentIndex];
+
+  clearFeedback();
+  saveCurrentCode();
+  setRunning(true, 'Checking…');
+  els.runOutput.classList.remove('error-output');
+  els.runOutput.textContent = 'Running Python and checking your answer…';
+
+  await new Promise(function(resolve) {
+    requestAnimationFrame(resolve);
+  });
+
+  try {
+    const result = await executePython(els.starterCode.value, step.check || '');
+    els.runOutput.textContent = formatExecution(result);
+    els.runOutput.classList.toggle('error-output', Boolean(result.error));
+
+    let passed = false;
+    let feedback = '';
+
+    if (step.expectedError) {
+      passed = result.error_type === step.expectedError;
+      feedback = passed
+        ? 'Correct — your code raised ' + step.expectedError + '.'
+        : 'Not yet — expected ' + step.expectedError + ', but got ' +
+          (result.error_type || 'no error') + '.';
+    } else if (result.error) {
+      feedback =
+        'Your code raised ' + result.error_type + '. Fix the error and try again.';
+    } else if (result.test_error) {
+      feedback =
+        result.test_error.replace(/^AssertionError:\s*/, '') ||
+        'The result does not pass the exercise checks yet.';
+    } else if (step.check) {
+      passed = true;
+      feedback = 'Correct — your code passes the checks.';
+    } else {
+      passed = true;
+      feedback = 'Code ran successfully.';
+    }
+
+    els.checkFeedback.hidden = false;
+    els.checkFeedback.className =
+      'check-feedback ' + (passed ? 'success' : 'failure');
+    els.checkFeedback.textContent = feedback;
+    els.executionState.textContent = passed ? 'Check passed' : 'Check failed';
+
+    if (passed) {
+      state.completed[step.id] = true;
+      saveState();
+      renderNav();
+      renderProgress();
+      els.completeButton.textContent = 'Completed ✓';
+      els.completeButton.classList.add('completed');
+    }
+  } catch (error) {
+    els.runOutput.textContent = error.message || String(error);
+    els.runOutput.classList.add('error-output');
+    els.executionState.textContent = 'Check failed';
+  } finally {
+    setRunning(false);
+  }
+});
+
+els.clearOutput.addEventListener('click', function() {
+  clearFeedback();
+  els.runOutput.classList.remove('error-output');
+  els.runOutput.textContent = pythonReady
+    ? 'Output cleared. Run your code again.'
+    : 'Python runtime is loading…';
+  els.executionState.textContent = pythonReady ? 'Ready' : 'Loading Python…';
+});
+
+els.resetCode.addEventListener('click', function() {
+  const step = steps[currentIndex];
+  els.starterCode.value = step.starter;
+  state.code[step.id] = step.starter;
+  saveState();
+});
+
+els.solutionButton.addEventListener('click', function() {
+  const opening = els.solutionPanel.hidden;
+  els.solutionPanel.hidden = !opening;
+  els.solutionButton.textContent = opening ? 'Hide solution' : 'Show solution';
+});
+
+els.prevButton.addEventListener('click', function() {
+  if (currentIndex === 0) return;
+  saveCurrentCode();
+  currentIndex -= 1;
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+els.nextButton.addEventListener('click', function() {
+  if (currentIndex >= steps.length - 1) return;
+  saveCurrentCode();
+  currentIndex += 1;
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+els.completeButton.addEventListener('click', function() {
+  const step = steps[currentIndex];
+  state.completed[step.id] = !state.completed[step.id];
+  saveState();
+  render();
+});
+
+els.resetProgress.addEventListener('click', function() {
+  const confirmed = window.confirm(
+    'Reset completion progress and practice code for all 21 steps?'
+  );
+
+  if (!confirmed) return;
+
+  state = { completed: {}, code: {} };
+  saveState();
+  render();
+});
+
+els.menuButton.addEventListener('click', function() {
+  els.sidebar.classList.toggle('open');
+});
+
+document.addEventListener('click', function(event) {
+  const copy = event.target.closest('[data-copy]');
+  if (!copy) return;
+
+  const target = document.getElementById(copy.getAttribute('data-copy'));
+  if (!target) return;
+
+  navigator.clipboard.writeText(target.textContent).then(function() {
+    const original = copy.textContent;
+    copy.textContent = 'Copied';
+
+    setTimeout(function() {
+      copy.textContent = original;
+    }, 900);
+  });
+});
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem(themeKey, theme);
+}
+
+const savedTheme = localStorage.getItem(themeKey);
+
+if (savedTheme) {
+  applyTheme(savedTheme);
+} else if (
+  window.matchMedia &&
+  window.matchMedia('(prefers-color-scheme: dark)').matches
+) {
+  applyTheme('dark');
+}
+
+els.themeButton.addEventListener('click', function() {
+  const current =
+    document.documentElement.getAttribute('data-theme') || 'light';
+
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+});
+
+render();
+els.runPython.disabled = false;
+els.checkAnswer.disabled = false;
+els.runtimeDot.className = 'runtime-dot';
+els.runtimeText.textContent = 'Python loads on first run · internet required';
+els.executionState.textContent = 'Ready to load';
+els.runOutput.textContent = 'Click Run Python to load the browser runtime.';
