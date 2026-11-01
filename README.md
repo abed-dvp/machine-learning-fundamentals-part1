@@ -1,55 +1,43 @@
 # 🧠 Machine Learning Fundamentals — Part 1
 
-A practical Python fundamentals guide covering **three lectures** through clear explanations, runnable examples, and exercises.
+A concise Python Codelab based on the first three **Machine Learning Fundamentals** lecture decks. Read the explanation, run the example, and complete one practice task per topic.
 
 > 🚀 **Interactive Codelab:** https://abed-dvp.github.io/machine-learning-fundamentals-part1/  
-> 📚 **Course material:** 3 lectures · 68 slides · 18 lessons  
-> 🐍 **Python:** 3.11+ (standard library only)
+> 📚 **Source:** Lecture 1 (26 slides), Lecture 2 (22 slides), Lecture 3 (20 slides)
 
----
+## What you'll learn
 
-## 📚 What You'll Learn
+- Introduction to Python: setup, variables, operators, loops, functions, lambda, classes, errors
+- Variables and Data Types: numbers, strings, Boolean, lists, tuples, dictionaries, sets, mutability, scope
+- Conditions and If Statements: if/else, elif, nested if, logical operators, ternary expression
 
-By the end, you'll understand:
+The three slide decks overlap on basic variables and conditions. Repeated explanations are kept short rather than taught twice.
 
-- Python setup, variables, and operators
-- Loops and reusable functions
-- Basic classes and exception handling
-- Python data types and collections
-- Mutability, copying, and scope
-- Comparisons, conditionals, and Boolean logic
-- Simple decision rules useful in data and machine-learning workflows
+## Getting started
 
----
-
-## ⚙️ Getting Started
-
-Install Python from [python.org](https://www.python.org/downloads/) and check it in the **terminal**:
+Install Python from [python.org](https://www.python.org/downloads/) and use the terminal to check the installation:
 
 ```bash
 python --version
 ```
 
-Create a virtual environment for a local project:
-
-```bash
-python -m venv .venv
-```
-
-Activate it using `.\\.venv\\Scripts\\Activate.ps1` in Windows PowerShell or `source .venv/bin/activate` on macOS/Linux. You can also run the course examples directly in the browser Codelab without a local installation.
+A local Python file can be executed with `python example.py`. Alternatively, open the [Codelab](https://abed-dvp.github.io/machine-learning-fundamentals-part1/) and run the examples in your browser. The browser downloads its Python runtime on first use.
 
 ---
 
 
-## Lecture 1 — Python Programming
+# Lecture 1 — Introduction to Python Programming
 
+## 1. Python & Hello World
 
-### 1. ⚙️ Setup & Hello World
+Python is a high-level, readable programming language used for many tasks, including machine learning.
 
-Python reads like ordinary instructions: each line performs an action. You can run code in a terminal, VS Code, Jupyter, or the browser Codelab.
+- Created by Guido van Rossum in 1991; Python is free and open source.
+- Install Python from python.org/downloads. Jupyter Notebook is another environment for running Python.
+- Use print() to display a message. The online editor runs Python in your browser.
 
 ```python
-print("Hello, World!")
+print('Hello, World!')
 ```
 
 **Output:**
@@ -58,388 +46,422 @@ print("Hello, World!")
 Hello, World!
 ```
 
-**Key idea**
-
-- Install Python 3 from [python.org](https://www.python.org/downloads/).
-- In a terminal, `python --version` checks the interpreter (on Windows, `py --version` may work).
-- To keep project packages isolated, run `python -m venv .venv`.
-- `print()` displays text. Quotation marks create a string.
+**Practice:** Change the message to Hello, Python! and print it.
 
 ---
 
+## 2. Variables & Type Conversion
 
-### 2. 📦 Variables & print()
+Variables hold values without requiring an explicit type declaration. Conversion functions change a value's type.
 
-Variables give names to values. Python decides a value's type at runtime, so you do not declare the type when assigning it.
+- Assign values using =, such as x = 10 and y = 'Hello'.
+- int(), float(), and str() convert between common types.
 
 ```python
-model_name = "Baseline"
-accuracy = 0.85
-print(model_name, accuracy)
-print(f"Model: {model_name}")
+x = 10
+y = 'Hello'
+print(x, y)
+print(int('20') + x)
 ```
 
 **Output:**
 
 ```text
-Baseline 0.85
-Model: Baseline
+10 Hello
+30
 ```
 
-**Key idea**
-
-- `=` assigns a value. `==` compares two values.
-- `model_name` and `accuracy` are readable `snake_case` variable names.
-- An f-string such as `f"Model: {model_name}"` inserts a value into text.
-- Use `type(value)` when checking a variable's type.
+**Practice:** Convert the string '5' to an integer, add 10, and save the result as total.
 
 ---
 
+## 3. Python Operators
 
-### 3. ➕ Operators & type conversion
+Operators let Python perform calculations and compare or combine values.
 
-Python supports arithmetic and comparisons. Values received as text must be converted before doing numeric calculations.
+- Arithmetic operators: +, -, *, /, //, %, **.
+- Comparisons like > and == return Boolean values. Logical operators include and, or, not.
+- Python also supports bitwise operators such as & (bitwise AND).
 
 ```python
-batches = int("4")
-items_per_batch = 8
-count = batches * items_per_batch
-print("Samples:", count)
-print("Remainder:", count % 5)
+print(10 + 3)
+print(10 > 3)
+print(True and False)
+print(5 & 3)
 ```
 
 **Output:**
 
 ```text
-Samples: 32
-Remainder: 2
+13
+True
+False
+1
 ```
 
-**Key idea**
-
-- `+`, `-`, `*`, `/` are the usual arithmetic operators.
-- `//` is floor division; `%` returns a remainder; `**` raises a power.
-- `int('4')` converts text to an integer; `float('0.5')` gives a float.
-- `10 / 4` is `2.5`, but `10 // 4` is `2`.
+**Practice:** Create sum_result = 6 + 4 and is_equal = (6 == 4).
 
 ---
 
+## 4. For & While Loops
 
-### 4. 🔁 For & while loops
+Loops repeat code. for iterates through a sequence, while repeats while a condition is true.
 
-Use a `for` loop when you want to visit each item. Use a `while` loop when an action should repeat until a condition becomes false.
+- A for loop goes through items or numbers produced by range().
+- A while loop needs a changing condition so it eventually ends.
 
 ```python
-scores = [3, 5, 7]
-total = 0
-for score in scores:
-    total += score
-print("Sum:", total)
-countdown = 2
-while countdown > 0:
-    countdown -= 1
-print("Done")
+for i in range(3):
+    print(i)
+
+count = 0
+while count < 2:
+    count += 1
+print('Count:', count)
 ```
 
 **Output:**
 
 ```text
-Sum: 15
-Done
+0
+1
+2
+Count: 2
 ```
 
-**Key idea**
-
-- `for score in scores:` visits each list element.
-- `total += score` adds the current number to a running total.
-- `range(1, 6)` generates `1, 2, 3, 4, 5`; the end is excluded.
-- A `while` loop must have a path to termination.
+**Practice:** Use a for loop to sum 1 to 3 in total. Then use while to increase count from 0 to 2.
 
 ---
 
+## 5. Functions with def
 
-### 5. 🧰 Functions & lambda
+A function is a reusable block of code defined using def. return provides its result.
 
-A function is a reusable block of code. It receives arguments through parameters and returns a value to the caller.
+- Parameters receive values when the function is called.
+- Indent the function body and use return to send a value back.
 
 ```python
 def add(a, b):
     return a + b
 
-double = lambda x: x * 2
-print(add(3, 4))
-print(double(5))
+print(add(2, 3))
 ```
 
 **Output:**
 
 ```text
-7
-10
+5
 ```
 
-**Key idea**
-
-- Define a function with `def name(parameters):`.
-- Use `return` to produce a result; `print()` only displays it.
-- A `lambda` is a short anonymous function limited to one expression.
-- Prefer a regular `def` for logic that needs several steps.
+**Practice:** Create a function multiply(a, b) that returns the product.
 
 ---
 
+## 6. Lambda Functions
 
-### 6. 🏗️ Classes & objects
+A lambda is a short anonymous function written as a single expression.
 
-A class describes what its objects contain and can do. Each created object is an instance of the class.
+- Lambda syntax: lambda parameters: expression.
+- The result of the expression is returned automatically.
 
 ```python
-class Model:
+add = lambda x, y: x + y
+print(add(2, 3))
+```
+
+**Output:**
+
+```text
+5
+```
+
+**Practice:** Create a lambda named double that multiplies its input by 2.
+
+---
+
+## 7. Classes & Objects
+
+Classes are templates for creating objects. __init__ initializes an object's data.
+
+- class Dog defines a class; Dog('Max') creates an object.
+- self.name stores a name inside that object.
+
+```python
+class Dog:
     def __init__(self, name):
         self.name = name
 
-model = Model("Baseline")
-print(model.name)
+dog = Dog('Max')
+print(dog.name)
 ```
 
 **Output:**
 
 ```text
-Baseline
+Max
 ```
 
-**Key idea**
+**Practice:** Create an object named pet from Dog with the name 'Rex'.
 
-- `class Model:` defines a class.
-- `__init__(self, name)` runs when an instance is created.
-- `self.name` stores an attribute on that particular object.
-- A method is a function called through an object.
+---
+
+## 8. Exception Handling
+
+try, except, and finally help handle errors in a controlled way.
+
+- try contains code that might fail; except handles the error.
+- finally executes whether an error occurred or not.
+
+```python
+try:
+    number = int('abc')
+except ValueError:
+    print('Invalid number')
+finally:
+    print('Finished')
+```
+
+**Output:**
+
+```text
+Invalid number
+Finished
+```
+
+**Practice:** Handle ValueError from int('bad') and always print 'Done' using finally.
 
 ---
 
 
-### 7. 🛡️ Exception handling
+# Lecture 2 — Variables and Data Types
 
-Exceptions report problems while a program runs. Handle specific, expected errors so that one invalid input does not crash your workflow unexpectedly.
+## 9. Variables & Numeric Types
+
+Python variables are dynamically typed. Numeric types include int, float, and complex.
+
+- int represents whole numbers, float decimals, and complex numbers with a real and imaginary part.
+- Use type() to see a value's type.
 
 ```python
-try:
-    value = int("not-a-number")
-except ValueError:
-    value = 0
-finally:
-    print("Conversion attempted")
+x = 5
+y = 3.14
+z = 2 + 3j
+print(type(x).__name__)
+print(type(y).__name__)
+print(type(z).__name__)
+```
+
+**Output:**
+
+```text
+int
+float
+complex
+```
+
+**Practice:** Define num = 7.5 and print its type.
+
+---
+
+## 10. Strings & Booleans
+
+A string contains characters in quotes. A Boolean represents True or False.
+
+- Strings use single or double quotation marks.
+- Boolean values are written True and False.
+
+```python
+name = 'John'
+status = True
+print(name)
+print(status)
+```
+
+**Output:**
+
+```text
+John
+True
+```
+
+**Practice:** Create name = 'Alice' and status = False and print both.
+
+---
+
+## 11. Lists
+
+Lists are ordered, mutable sequences. Their elements are accessible by index.
+
+- Write a list with square brackets: [1, 2, 3].
+- append(), insert(), and remove() change a list; indexing starts at 0.
+
+```python
+values = [1, 2, 3]
+values.append(4)
+values.insert(0, 0)
+values.remove(2)
+print(values)
+print(values[0])
+```
+
+**Output:**
+
+```text
+[0, 1, 3, 4]
+0
+```
+
+**Practice:** Starting with [1, 2, 3], append 4, then remove 2.
+
+---
+
+## 12. Tuples
+
+Tuples are ordered but immutable sequences. You can unpack their values into variables.
+
+- Use parentheses: (1, 2, 3).
+- Unpack using a, b, c = (1, 2, 3).
+
+```python
+numbers = (1, 2, 3)
+a, b, c = numbers
+print(a, b, c)
+```
+
+**Output:**
+
+```text
+1 2 3
+```
+
+**Practice:** Unpack the tuple (4, 5, 6) into x, y, and z.
+
+---
+
+## 13. Dictionaries
+
+Dictionaries store values in key-value pairs.
+
+- Read a value using a key, for example data['name'].
+- Common methods are keys(), values(), items(), and update().
+
+```python
+person = {'name': 'Alice', 'age': 25}
+print(person['name'])
+print(list(person.keys()))
+person.update({'age': 26})
+print(person['age'])
+```
+
+**Output:**
+
+```text
+Alice
+['name', 'age']
+26
+```
+
+**Practice:** Create a dictionary person containing name = 'Bob' and age = 30.
+
+---
+
+## 14. Sets
+
+Sets are unordered collections of unique elements.
+
+- A set removes repeated elements.
+- union combines sets, intersection finds common elements, and difference finds elements in one set but not the other.
+
+```python
+a = {1, 2, 3}
+b = {3, 4}
+print(sorted(a | b))
+print(sorted(a & b))
+print(sorted(a - b))
+```
+
+**Output:**
+
+```text
+[1, 2, 3, 4]
+[3]
+[1, 2]
+```
+
+**Practice:** Using sets a and b, save their intersection in common.
+
+---
+
+## 15. Mutable, Immutable & Dynamic Typing
+
+Lists and dictionaries are mutable, while tuples and strings are immutable. Python names can refer to values of different types.
+
+- A mutable object can be changed after creation.
+- Dynamic typing allows reassigning a variable from one type to another.
+
+```python
+numbers = [1, 2]
+numbers.append(3)
+value = 10
+value = 'ten'
+print(numbers)
 print(value)
 ```
 
 **Output:**
 
 ```text
-Conversion attempted
-0
-```
-
-**Key idea**
-
-- `try` contains code that may raise an error.
-- `except ValueError` handles that type of error.
-- `finally` runs whether the `try` block succeeds or fails.
-- Do not use a broad `except:` to hide programming mistakes.
-
----
-
-
-## Lecture 2 — Variables & Data Types
-
-
-### 8. 🔤 Numeric, string & Boolean types
-
-Python provides several built-in types. Picking the right type is a basic part of working with data.
-
-```python
-age = 35
-price = 3.5
-name = "Python"
-active = True
-print(type(age).__name__, type(price).__name__)
-print(name.upper(), active)
-```
-
-**Output:**
-
-```text
-int float
-PYTHON True
-```
-
-**Key idea**
-
-- `int` holds whole numbers; `float` holds decimal values; `complex` holds numbers such as `2 + 3j`.
-- `str` stores text, and `bool` stores `True` or `False`.
-- `type(value).__name__` shows the type name.
-- `bool('False')` is `True` because any non-empty string is truthy.
-
----
-
-
-### 9. 📋 Lists: indexing & mutation
-
-A list is an ordered collection that you can change after creating it.
-
-```python
-scores = [70, 80, 90]
-scores.append(100)
-print(scores[0], scores[-1])
-print(scores[1:3])
-```
-
-**Output:**
-
-```text
-70 100
-[80, 90]
-```
-
-**Key idea**
-
-- The first element is at index `0`; `scores[-1]` is the last.
-- `.append(value)` adds to the end; `.insert(index, value)` inserts at a position.
-- `.remove(value)` removes the first matching item.
-- `scores[1:3]` returns elements at indices 1 and 2 (not 3).
-
----
-
-
-### 10. 📐 Tuples & unpacking
-
-A tuple is an ordered, fixed-length sequence whose elements cannot be reassigned.
-
-```python
-point = (3, 4)
-x, y = point
-print("x:", x, "y:", y)
-print("Length:", len(point))
-```
-
-**Output:**
-
-```text
-x: 3 y: 4
-Length: 2
-```
-
-**Key idea**
-
-- Use `(3, 4)` to store a pair of values.
-- `x, y = point` unpacks values into two names.
-- `(3,)` is a one-item tuple; `(3)` is just the number 3.
-- A tuple can contain a mutable list: the tuple itself remains immutable, but the list can still change.
-
----
-
-
-### 11. 🗂️ Dictionaries: keyed data
-
-A dictionary stores values under named keys. It is well suited to configuration and structured records.
-
-```python
-settings = {"model": "baseline", "epochs": 10}
-settings["epochs"] = 12
-print(settings["model"])
-print(settings.get("batch_size", 32))
-```
-
-**Output:**
-
-```text
-baseline
-32
-```
-
-**Key idea**
-
-- Read required keys with `settings['model']`.
-- Use `settings.get('batch_size', 32)` when a missing key is acceptable.
-- Assign `settings['epochs'] = 12` to add or update a value.
-- `.items()` supplies `(key, value)` pairs for iteration.
-
----
-
-
-### 12. 🧩 Sets: unique items
-
-A set stores unique items. It is useful for deduplication, checking membership and comparing groups.
-
-```python
-train = {"cat", "dog"}
-test = {"dog", "bird"}
-print(sorted(train | test))
-print(sorted(train & test))
-```
-
-**Output:**
-
-```text
-['bird', 'cat', 'dog']
-['dog']
-```
-
-**Key idea**
-
-- `set(['cat', 'cat', 'dog'])` produces two unique items.
-- `a | b` is union, `a & b` intersection, and `a - b` difference.
-- Set elements have no guaranteed display order.
-- Use `set()` for an empty set; `{}` makes an empty dictionary.
-
----
-
-
-### 13. 🔄 Mutable, immutable & variable scope
-
-Some Python objects can change in place; others cannot. Variables also have a scope that determines where a name can be used.
-
-```python
-original = [1, 2]
-alias = original
-alias.append(3)
-print(original)
-
-def doubled(value):
-    result = value * 2
-    return result
-print(doubled(4))
-```
-
-**Output:**
-
-```text
 [1, 2, 3]
-8
+ten
 ```
 
-**Key idea**
+**Practice:** Append 4 to numbers and change value from 10 to the string 'ten'.
 
-- Lists and dictionaries are mutable; strings, numbers and tuples are immutable.
-- `alias = original` gives two names for the same list.
-- `original.copy()` makes a new outer list (a shallow copy).
-- Names defined inside a function are generally local to that function.
+---
+
+## 16. Global & Local Variables
+
+A global variable is defined outside a function; a local variable is defined inside it.
+
+- Local variables belong to their function's scope.
+- A local name can differ from a global name with the same spelling.
+
+```python
+x = 10
+def show():
+    x = 5
+    return x
+print(show())
+print(x)
+```
+
+**Output:**
+
+```text
+5
+10
+```
+
+**Practice:** Make show() return 8 using a local x, while the global x stays 10.
 
 ---
 
 
-## Lecture 3 — Conditions & If Statements
+# Lecture 3 — Conditions and If Statements
 
+## 17. If & Else
 
-### 14. 🚦 Comparisons, if & else
+If statements select a block of code based on a Boolean condition.
 
-An `if` statement runs a block only when its condition is true. `else` provides the alternative.
+- Use if condition: followed by an indented block.
+- else handles the alternative when the condition is False.
 
 ```python
 age = 18
 if age >= 18:
-    label = "Adult"
+    print('Adult')
 else:
-    label = "Minor"
-print(label)
+    print('Minor')
 ```
 
 **Output:**
@@ -448,29 +470,25 @@ print(label)
 Adult
 ```
 
-**Key idea**
-
-- Comparisons such as `>=`, `<`, `==` and `!=` produce Boolean results.
-- A colon starts the block; indentation defines its contents.
-- `age >= 18` includes 18, not just values above it.
-- `if/else` executes exactly one of its two branches.
+**Practice:** Set age = 16 and print 'Minor' using if/else.
 
 ---
 
+## 18. Elif
 
-### 15. 🛣️ Elif: several branches
+elif allows additional conditions after an if statement.
 
-`elif` introduces another condition after `if`. Branches are checked in order until one matches.
+- Conditions are evaluated in order.
+- The first matching if/elif branch is executed; else is the fallback.
 
 ```python
 score = 85
 if score >= 90:
-    grade = "A"
+    print('A')
 elif score >= 80:
-    grade = "B"
+    print('B')
 else:
-    grade = "C"
-print(grade)
+    print('C')
 ```
 
 **Output:**
@@ -479,177 +497,91 @@ print(grade)
 B
 ```
 
-**Key idea**
-
-- `if score >= 90` must be checked before `elif score >= 80`.
-- Only the first matching branch executes.
-- The final `else` provides a fallback.
-- For ranges, test values just below and exactly at the boundaries.
+**Practice:** Set score = 95 and print A using if/elif/else.
 
 ---
 
+## 19. Nested If
 
-### 16. 🌳 Nested if statements
+An if statement can be written inside another if statement.
 
-A nested `if` places one decision inside another. The inner decision runs only when the outer condition passes.
+- The inner condition runs only when the outer condition is True.
+- Indentation shows the relationship between the conditions.
 
 ```python
 number = 10
 if number > 0:
     if number % 2 == 0:
-        print("Positive even")
-    else:
-        print("Positive odd")
+        print('Even')
 ```
 
 **Output:**
 
 ```text
-Positive even
+Even
 ```
 
-**Key idea**
-
-- Check `number > 0` before asking whether the number is even.
-- `number % 2 == 0` tests evenness.
-- Indentation shows which branch each `else` belongs to.
-- Prefer early returns if many levels of nesting make code hard to read.
+**Practice:** Using a nested if, print Even when number is positive and even.
 
 ---
 
+## 20. Logical Operators: and, or, not
 
-### 17. 🔗 and, or & not
+Logical operators combine or reverse Boolean conditions.
 
-Use logical operators to combine conditions in one decision.
+- and requires both conditions to be True.
+- or requires at least one condition to be True.
+- not reverses a Boolean value.
 
 ```python
-score = 0.92
-approved = True
-blocked = False
-if score >= 0.9 and approved and not blocked:
-    print("Ready")
-else:
-    print("Review")
+age = 20
+if age > 18 and age < 30:
+    print('Young Adult')
+score = 45
+if score < 50 or score > 90:
+    print('Low or High Score')
+status = False
+if not status:
+    print('Inactive')
 ```
 
 **Output:**
 
 ```text
-Ready
+Young Adult
+Low or High Score
+Inactive
 ```
 
-**Key idea**
-
-- `and` requires both conditions to be true.
-- `or` requires at least one condition to be true.
-- `not` reverses a Boolean value.
-- Python short-circuits `and` and `or`; parentheses improve readability.
+**Practice:** With age=20, score=45, and status=False, write the three if statements using and, or, and not.
 
 ---
 
+## 21. Ternary Operator
 
-### 18. 🎯 Conditional expression & final practice
+A ternary expression is a short way to select one of two values.
 
-A conditional expression chooses a value in a single line. It is useful for simple, readable decisions.
+- Syntax: value_if_true if condition else value_if_false.
+- Use it when the decision is short and simple.
 
 ```python
-number = 11
-parity = "Even" if number % 2 == 0 else "Odd"
-print(parity)
-probability = 0.8
-label = "positive" if probability >= 0.5 else "negative"
-print(label)
+number = 10
+result = 'Even' if number % 2 == 0 else 'Odd'
+print(result)
 ```
 
 **Output:**
 
 ```text
-Odd
-positive
+Even
 ```
 
-**Key idea**
-
-- Syntax: `value_if_true if condition else value_if_false`.
-- Avoid deeply nested conditional expressions.
-- A simple prediction threshold can map a probability to a label.
-- In real ML, choose thresholds based on validation and error costs, not convenience.
-
-**Machine-learning connection:** Prediction thresholds affect false positives and false negatives; experiment metrics are needed to choose them.
+**Practice:** Set number = 7 and calculate result as Even or Odd with one conditional expression.
 
 ---
 
+## Practice
 
-## 🧠 Quick Python Cheat Sheet
+Each of the 21 topics has one matching coding exercise in the [interactive Codelab](https://abed-dvp.github.io/machine-learning-fundamentals-part1/). Use **Run Python** to inspect output and **Check answer** to validate your code.
 
-```python
-# Variables and core data types
-threshold = 0.8
-model_name = "Baseline"
-is_trained = True
-
-# Collections
-scores = [0.7, 0.9, 0.85]       # list: mutable, ordered
-shape = (3, 1)                  # tuple: fixed-length
-settings = {"epochs": 10}       # dictionary: key/value
-labels = {"cat", "dog"}         # set: unique values
-
-# Loop
-for score in scores:
-    print(score)
-
-# Function and condition
-def classify(score, threshold=0.8):
-    return "positive" if score >= threshold else "negative"
-
-print(classify(0.9))             # positive
-```
-
-### Data structures at a glance
-
-| Type | Example | Important property |
-|---|---|---|
-| `list` | `[1, 2, 3]` | Ordered, mutable |
-| `tuple` | `(128, 64)` | Ordered, immutable |
-| `dict` | `{"epochs": 10}` | Maps keys to values |
-| `set` | `{"A", "B"}` | Unique, unordered values |
-
-### Operator reference
-
-| Operator | Meaning | Example |
-|---|---|---|
-| `/` | True division | `10 / 4 == 2.5` |
-| `//` | Floor division | `10 // 4 == 2` |
-| `%` | Remainder | `10 % 4 == 2` |
-| `**` | Power | `2 ** 3 == 8` |
-| `==` | Equal | `3 == 3` |
-| `!=` | Not equal | `3 != 4` |
-| `>=` | Greater/equal | `3 >= 3` |
-
----
-
-## 🧪 Interactive Practice
-
-The **[browser Codelab](https://abed-dvp.github.io/machine-learning-fundamentals-part1/codelab/)** includes all 18 steps, examples and an editable **Try it** exercise immediately under each concept, **Run Python**, **Check answer**, solutions, and per-activity progress tracking. Terminal commands are explicitly labeled and checked for syntax, not executed in the browser. The first run downloads the Python runtime, so it requires an internet connection.
-
-For each lesson, read the example, predict the output, then solve the corresponding exercise without looking at the solution.
-
----
-
-## 📁 Repository Structure
-
-```text
-machine-learning-fundamentals-part1/
-├── README.md                   # Self-study lesson notes
-├── STUDY_GUIDE.md              # Short revision guide
-├── index.html                  # Codelab redirect
-├── codelab/
-│   ├── index.html              # Interactive UI
-│   ├── app.js                  # Inline exercises, Python runner and progress
-│   ├── activities.js           # Exercises matched to each concept
-│   ├── steps.js                # 18 lesson summaries and combined exercises
-│   └── styles.css              # Layout and themes
-└── tests/test_lessons.py       # Automated example/solution tests
-```
-
-**Source:** The first three Machine Learning Fundamentals lectures (Python Programming, Variables & Data Types, and Conditions). Examples and practice exercises are written for this repository; they are not verbatim slide excerpts.
+The course follows the uploaded slide topics closely. Where a slide only names a concept, a small Python example is included to make it runnable. No extra machine-learning algorithms or unrelated projects are introduced.

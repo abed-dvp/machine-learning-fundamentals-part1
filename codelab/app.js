@@ -1,5 +1,50 @@
 'use strict';
 
+const steps = window.CODELAB_STEPS;
+const modules = window.CODELAB_MODULES;
+const storageKey = 'abed-codelab-mlf-part1-source-v3';
+const themeKey = 'abed-codelab-theme';
+
+let currentIndex = 0;
+let state = loadState();
+let pyodide = null;
+let pythonReady = false;
+
+const els = {
+  sidebar: document.getElementById('sidebar'),
+  menuButton: document.getElementById('menuButton'),
+  stepNav: document.getElementById('stepNav'),
+  progressBar: document.getElementById('progressBar'),
+  progressText: document.getElementById('progressText'),
+  stepNumber: document.getElementById('stepNumber'),
+  videoTime: document.getElementById('videoTime'),
+  lessonTitle: document.getElementById('lessonTitle'),
+  lessonIntro: document.getElementById('lessonIntro'),
+  learnBullets: document.getElementById('learnBullets'),
+  exampleCode: document.getElementById('exampleCode'),
+  expectedOutput: document.getElementById('expectedOutput'),
+  challengeText: document.getElementById('challengeText'),
+  starterCode: document.getElementById('starterCode'),
+  solutionPanel: document.getElementById('solutionPanel'),
+  solutionCode: document.getElementById('solutionCode'),
+  solutionButton: document.getElementById('solutionButton'),
+  resetCode: document.getElementById('resetCode'),
+  runPython: document.getElementById('runPython'),
+  checkAnswer: document.getElementById('checkAnswer'),
+  clearOutput: document.getElementById('clearOutput'),
+  runOutput: document.getElementById('runOutput'),
+  executionState: document.getElementById('executionState'),
+  checkFeedback: document.getElementById('checkFeedback'),
+  runtimeStatus: document.getElementById('runtimeStatus'),
+  runtimeDot: document.getElementById('runtimeDot'),
+  runtimeText: document.getElementById('runtimeText'),
+  prevButton: document.getElementById('prevButton'),
+  nextButton: document.getElementById('nextButton'),
+  completeButton: document.getElementById('completeButton'),
+  resetProgress: document.getElementById('resetProgress'),
+  themeButton: document.getElementById('themeButton')
+};
+
 const PYTHON_HELPER = `
 import ast
 import contextlib
@@ -58,290 +103,399 @@ def __abed_run(code, test_code=""):
     }
 `;
 
-const steps = window.CODELAB_STEPS;
-const modules = window.CODELAB_MODULES;
-const extras = window.CODELAB_ACTIVITIES || {};
-const storageKey = 'abed-codelab-mlf-part1-activities-v2';
-const oldStorageKey = 'abed-codelab-mlf-part1-python-lectures-v1';
-const themeKey = 'abed-codelab-theme';
-let currentIndex = 0;
-let pyodide = null;
-let pythonPromise = null;
-
-function loadState() {
+async function initPythonRuntime() {
+  if (pythonReady && pyodide) return pyodide;
   try {
-    const value = JSON.parse(localStorage.getItem(storageKey) || '{}');
-    return { done: value.done || {}, code: value.code || {} };
-  } catch { return { done: {}, code: {} }; }
-}
-let state = loadState();
-function saveState() { localStorage.setItem(storageKey, JSON.stringify(state)); }
-
-const els = {
-  sidebar: document.getElementById('sidebar'),
-  stepNav: document.getElementById('stepNav'),
-  activityList: document.getElementById('activityList'),
-  progressBar: document.getElementById('progressBar'),
-  progressText: document.getElementById('progressText'),
-  stepNumber: document.getElementById('stepNumber'),
-  videoTime: document.getElementById('videoTime'),
-  lessonTitle: document.getElementById('lessonTitle'),
-  lessonIntro: document.getElementById('lessonIntro'),
-  prev: document.getElementById('prevButton'),
-  next: document.getElementById('nextButton'),
-  completion: document.getElementById('completeButton'),
-  reset: document.getElementById('resetProgress'),
-  runtime: document.getElementById('runtimeText'),
-  takeaway: document.getElementById('takeawayText')
-};
-function element(tag, className, textValue) {
-  const result = document.createElement(tag);
-  if (className) result.className = className;
-  if (textValue != null) result.textContent = textValue;
-  return result;
-}
-function append(parent, tag, className, textValue) {
-  const e = element(tag, className, textValue);
-  parent.appendChild(e);
-  return e;
-}
-function button(label, className, callback) {
-  const b = element('button', className, label);
-  b.type = 'button'; b.addEventListener('click', callback);
-  return b;
-}
-function allActivities(step) {
-  const additional = extras[step.id] || [];
-  return additional.concat([{
-    kind: 'python', title: 'Practice together', note: 'Apply the concepts you have just learned in one combined Python exercise.',
-    example: step.example, output: step.output, challenge: step.challenge,
-    starter: step.starter, solution: step.solution, check: step.check
-  }]);
-}
-function activityKey(step, index) { return step.id + ':' + index; }
-function completedCount(step) {
-  return allActivities(step).filter((_,index) => state.done[activityKey(step,index)]).length;
-}
-function isCompleted(step) { return completedCount(step) === allActivities(step).length; }
-function refreshProgress() {
-  const done = steps.filter(isCompleted).length;
-  els.progressBar.style.width = Math.round(done / steps.length * 100) + '%';
-  els.progressText.textContent = done + ' of ' + steps.length + ' lessons complete';
-  const step = steps[currentIndex];
-  const n = completedCount(step), total = allActivities(step).length;
-  els.completion.textContent = n + ' / ' + total + ' activities complete';
-  els.completion.classList.toggle('completed',n===total);
-  els.completion.setAttribute('aria-label',n+' of '+total+' activities complete');
-}
-function refreshNav() {
-  els.stepNav.replaceChildren();
-  steps.forEach((step,i) => {
-    if (i===0 || steps[i-1].unit!==step.unit) {
-      append(els.stepNav,'div','module-divider','Lecture '+step.unit+' · '+modules[step.unit-1].title);
-    }
-    const link=element('button','step-link');
-    link.type='button';
-    if(i===currentIndex)link.classList.add('active');
-    if(isCompleted(step))link.classList.add('complete');
-    append(link,'span','step-index',isCompleted(step)?'✓':String(step.id));
-    append(link,'span','step-title',step.title);
-    append(link,'span','step-time',step.time);
-    link.addEventListener('click',()=>go(i));
-    els.stepNav.appendChild(link);
-  });
-}
-function mark(step,index) {
-  state.done[activityKey(step,index)] = true;
-  saveState();
-  refreshNav();refreshProgress();
-}
-async function ensurePython() {
-  if(pyodide)return pyodide;
-  if(pythonPromise)return pythonPromise;
-  pythonPromise=(async()=>{
-    els.runtime.textContent='Loading Python from this website…';
-    if(typeof window.loadPyodide!=='function'){
-      await new Promise((resolve,reject)=>{
-        const script=document.createElement('script');
-        script.src='./vendor/pyodide/pyodide.js';
-        script.onload=resolve;
-        script.onerror=()=>reject(new Error('Python runtime files were not published. Check the GitHub Pages build.'));
+    els.runtimeText.textContent = 'Loading Python (first run needs internet)…';
+    els.executionState.textContent = 'Loading Python…';
+    if (typeof window.loadPyodide !== 'function') {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = './vendor/pyodide/pyodide.js';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Pyodide runtime file was not published. Check the Pages deployment and /codelab/vendor/pyodide/ directory.'));
         document.head.appendChild(script);
       });
     }
-    const runtime=await window.loadPyodide({indexURL:'./vendor/pyodide/'});
-    runtime.setStdin({error:true});
-    runtime.runPython(PYTHON_HELPER);
-    pyodide=runtime;
-    els.runtime.textContent='Python ready in browser';
-    return runtime;
-  })().catch(error=>{
-    pythonPromise=null;
-    els.runtime.textContent='Python unavailable: '+(error.message||error);
+    pyodide = await window.loadPyodide({indexURL:'./vendor/pyodide/'});
+    pyodide.setStdin({ error: true });
+    pyodide.runPython(PYTHON_HELPER);
+    const version = pyodide.runPython('import sys; sys.version.split()[0]');
+    pythonReady = true;
+    els.runtimeDot.className = 'runtime-dot ready';
+    els.runtimeText.textContent = 'Python ' + version + ' ready in browser';
+    els.executionState.textContent = 'Ready';
+    return pyodide;
+  } catch (error) {
+    pythonReady = false;
+    const detail = error?.message || String(error);
+    els.runtimeDot.className = 'runtime-dot error';
+    els.runtimeText.textContent = 'Python runtime unavailable — ' + detail;
+    els.executionState.textContent = 'Runtime error';
     throw error;
-  });
-  return pythonPromise;
-}
-async function executePython(code,testCode){
-  const runtime=await ensurePython();
-  runtime.globals.set('__abed_user_code',code);
-  runtime.globals.set('__abed_test_code',testCode||'');
-  try{
-    const result=await runtime.runPythonAsync('json.dumps(__abed_run(__abed_user_code, __abed_test_code))');
-    return JSON.parse(String(result));
-  }finally{
-    try{runtime.globals.delete('__abed_user_code');runtime.globals.delete('__abed_test_code');}catch{}
   }
 }
-function codeSample(parent,code,caption){
-  const head=append(parent,'div','section-head');
-  append(head,'strong','sample-label',caption||'Example');
-  head.appendChild(button('Copy','copy-button',()=>{
-    navigator.clipboard.writeText(code).then(()=>{head.lastChild.textContent='Copied';}).catch(()=>{head.lastChild.textContent='Copy unavailable';});
-  }));
-  append(append(parent,'pre','example-code'),'code','',code);
+
+async function executePython(code, testCode) {
+  if (!pythonReady || !pyodide) await initPythonRuntime();
+  // All lessons use the Python standard library. No extra packages are required.
+  pyodide.globals.set('__abed_user_code', code);
+  pyodide.globals.set('__abed_test_code', testCode || '');
+  try {
+    const jsonResult = await pyodide.runPythonAsync('json.dumps(__abed_run(__abed_user_code, __abed_test_code))');
+    return JSON.parse(String(jsonResult));
+  } finally {
+    try { pyodide.globals.delete('__abed_user_code'); pyodide.globals.delete('__abed_test_code'); } catch {}
+  }
 }
-function renderTerminal(card,step,index,activity){
-  append(card,'p','terminal-hint','Terminal command · run on your own computer (not in the browser Python runtime).');
-  codeSample(card,activity.example,'LOCAL TERMINAL');
-  append(append(card,'div','output-block'),'span','','Expected result');
-  append(append(card,'pre','terminal-example'),'code','',activity.output);
-  if(activity.alternate)append(card,'p','mini-note',activity.alternate);
-  const practice=append(card,'div','inline-practice');
-  append(practice,'strong','','Your turn');
-  append(practice,'p','mini-note',activity.challenge);
-  const editor=append(practice,'textarea','terminal-editor');
-  editor.setAttribute('aria-label','Type a terminal command');
-  editor.placeholder='Type the command you would run locally (not executed here)';
-  const key=activityKey(step,index);
-  editor.value=state.code[key]||'';
-  editor.addEventListener('input',()=>{state.code[key]=editor.value;saveState();});
-  const feedback=append(practice,'p','activity-feedback');
-  const actions=append(practice,'div','try-actions');
-  actions.appendChild(button('Check command','check-button',()=>{
-    const value=editor.value.trim();
-    let valid=false;
-    if(step.id===1 && index===0){
-      valid=/^(python|python3|py)\s+--version$/.test(value);
-    }else if(step.id===1 && index===2){
-      valid=/python(?:3)?\s+-m\s+venv\s+\.venv/.test(value);
-    }else{
-      valid=value.length>0;
+
+function setRunning(isRunning, label) {
+  els.runPython.disabled = isRunning;
+  els.checkAnswer.disabled = isRunning;
+  els.executionState.textContent = label || (isRunning ? 'Running…' : 'Ready');
+}
+
+function formatExecution(result) {
+  const parts = [];
+  if (result.output) parts.push(result.output.replace(/\s+$/, ''));
+  if (result.error) parts.push(result.error);
+  return parts.join('\n') || '(no output)';
+}
+
+function clearFeedback() {
+  els.checkFeedback.hidden = true;
+  els.checkFeedback.className = 'check-feedback';
+  els.checkFeedback.textContent = '';
+}
+
+function loadState() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    return {
+      completed: parsed.completed || {},
+      code: parsed.code || {}
+    };
+  } catch {
+    return { completed: {}, code: {} };
+  }
+}
+
+function saveState() {
+  localStorage.setItem(storageKey, JSON.stringify(state));
+}
+
+function secondsFromTimestamp(value) {
+  const parts = value.split(':').map(Number);
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  return parts[0] * 3600 + parts[1] * 60 + parts[2];
+}
+
+function renderNav() {
+  els.stepNav.innerHTML = '';
+
+  steps.forEach(function(step, index) {
+    if (index === 0 || steps[index-1].unit !== step.unit) {
+      const heading = document.createElement('div');
+      heading.className = 'module-divider';
+      heading.textContent = 'Lecture ' + step.unit + ' · ' + modules[step.unit-1].title;
+      els.stepNav.appendChild(heading);
     }
-    feedback.className='activity-feedback '+(valid?'success':'failure');
-    feedback.textContent=valid?'Correct command syntax. Run it locally to verify the result; the browser cannot verify your installed environment.':'Type the terminal command shown in the example, then try again.';
-    if(valid)mark(step,index);
-  }));
-  actions.appendChild(button('Reset','secondary-button',()=>{
-    editor.value='';state.code[key]='';delete state.done[key];saveState();feedback.textContent='';refreshProgress();refreshNav();
-  }));
-}
-function renderPython(card,step,index,activity){
-  codeSample(card,activity.example,'PYTHON EXAMPLE');
-  const output=append(card,'div','output-block');
-  append(output,'span','','Expected output');
-  append(append(output,'pre'),'code','',activity.output);
-  const practice=append(card,'div','inline-practice');
-  append(practice,'strong','','YOUR TURN');
-  append(practice,'p','mini-note',activity.challenge);
-  const editor=append(practice,'textarea','activity-editor');
-  editor.setAttribute('aria-label','Python code for '+activity.title);
-  const key=activityKey(step,index);
-  let value=state.code[key];
-  if(value==null && index===allActivities(step).length-1){
-    try{const old=JSON.parse(localStorage.getItem(oldStorageKey)||'{}');value=old.code?.[step.id];}catch{}
-  }
-  editor.value=typeof value==='string'?value:activity.starter;
-  editor.addEventListener('input',()=>{state.code[key]=editor.value;saveState();});
-  const actions=append(practice,'div','try-actions');
-  const status=append(practice,'p','activity-feedback');
-  const resultPanel=append(practice,'div','mini-output');
-  append(resultPanel,'strong','','PYTHON OUTPUT');
-  const result=append(resultPanel,'pre','mini-terminal','Run your code to see the output.');
-  const solution=append(practice,'div','solution-panel');
-  solution.hidden=true;
-  codeSample(solution,activity.solution,'One possible solution');
-  const run=button('▶ Run Python','primary-button',()=>runPython(false));
-  const check=button('✓ Check answer','check-button',()=>runPython(true));
-  actions.appendChild(run);actions.appendChild(check);
-  actions.appendChild(button('Reset code','secondary-button',()=>{
-    editor.value=activity.starter;state.code[key]=editor.value;
-    delete state.done[key];saveState();refreshProgress();refreshNav();status.textContent='';
-    result.textContent='Run your code to see the output.';
-  }));
-  actions.appendChild(button('Show solution','secondary-button',e=>{
-    solution.hidden=!solution.hidden;e.currentTarget.textContent=solution.hidden?'Show solution':'Hide solution';
-  }));
-  async function runPython(withChecks){
-    state.code[key]=editor.value;saveState();
-    run.disabled=true;check.disabled=true;
-    status.className='activity-feedback';
-    status.textContent=withChecks?'Checking your answer…':'Running Python…';
-    await new Promise(resolve=>requestAnimationFrame(resolve));
-    try{
-      const info=await executePython(editor.value,withChecks?activity.check:'');
-      result.textContent=[info.output?.trim(),info.error].filter(Boolean).join('\n')||'(no output)';
-      result.classList.toggle('error-output',Boolean(info.error));
-      if(info.error)throw new Error(info.error);
-      if(withChecks){
-        if(info.test_error){
-          status.className='activity-feedback failure';
-          status.textContent=info.test_error.replace(/^AssertionError:\s*/,'')||'Check did not pass.';
-        }else{
-          status.className='activity-feedback success';
-          status.textContent='Correct! This activity passes its Python checks.';
-          mark(step,index);
-        }
-      }else{status.textContent='Code executed. Use Check answer to validate your solution.';}
-    }catch(error){
-      status.className='activity-feedback failure';
-      status.textContent=error.message||String(error);
-    }finally{run.disabled=false;check.disabled=false;}
-  }
-}
-function renderLesson(){
-  const step=steps[currentIndex];
-  els.stepNumber.textContent='Step '+step.id+' of '+steps.length;
-  els.videoTime.textContent=step.slides+' · '+step.time;
-  els.lessonTitle.textContent=step.title;
-  els.lessonIntro.textContent=step.learn;
-  els.takeaway.textContent=step.takeaway;
-  els.activityList.replaceChildren();
-  allActivities(step).forEach((activity,index)=>{
-    const card=append(els.activityList,'article','concept-card');
-    const head=append(card,'div','concept-heading');
-    append(head,'span','concept-number',(index+1)+' / '+allActivities(step).length);
-    append(head,'h2','',activity.title);
-    append(head,'span','concept-type',activity.kind==='terminal'?'TERMINAL':'PYTHON');
-    append(card,'p','concept-note',activity.note);
-    if(activity.kind==='terminal')renderTerminal(card,step,index,activity);
-    else renderPython(card,step,index,activity);
+    const button = document.createElement('button');
+    button.className = 'step-link';
+
+    if (index === currentIndex) button.classList.add('active');
+    if (state.completed[step.id]) button.classList.add('complete');
+
+    const marker = state.completed[step.id] ? '✓' : String(step.id);
+
+    button.innerHTML =
+      '<span class="step-index">' + marker + '</span>' +
+      '<span class="step-title">' + escapeHtml(step.title) + '</span>' +
+      '<span class="step-time">' + escapeHtml(step.time) + '</span>';
+
+    button.addEventListener('click', function() {
+      saveCurrentCode();
+      currentIndex = index;
+      render();
+      els.sidebar.classList.remove('open');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    els.stepNav.appendChild(button);
   });
-  els.prev.disabled=currentIndex===0;
-  els.next.disabled=currentIndex===steps.length-1;
-  refreshProgress();
 }
-function render(){refreshNav();renderLesson();}
-function go(i){
-  currentIndex=i;render();els.sidebar.classList.remove('open');
-  window.scrollTo({top:0,behavior:'smooth'});
+
+function renderLesson() {
+  const step = steps[currentIndex];
+
+  els.stepNumber.textContent = 'Step ' + step.id + ' of ' + steps.length;
+  els.videoTime.textContent = step.slides + ' · ' + step.time;
+  els.lessonTitle.textContent = step.title;
+  els.lessonIntro.textContent = step.learn;
+
+  els.learnBullets.innerHTML = '';
+  step.bullets.forEach(function(item) {
+    const li = document.createElement('li');
+    li.textContent = item;
+    els.learnBullets.appendChild(li);
+  });
+
+  els.exampleCode.textContent = step.example;
+  els.expectedOutput.textContent = step.output;
+  els.challengeText.textContent = step.challenge;
+  els.solutionCode.textContent = step.solution;
+  document.getElementById('takeawayText').textContent = step.takeaway;
+
+  const saved = state.code[step.id];
+  els.starterCode.value = typeof saved === 'string' ? saved : step.starter;
+
+  els.solutionPanel.hidden = true;
+  els.solutionButton.textContent = 'Show solution';
+  clearFeedback();
+
+  els.runOutput.classList.remove('error-output');
+  els.runOutput.textContent = pythonReady
+    ? 'Run your Python code to see the output.'
+    : 'Click Run Python to load the browser runtime.';
+  els.executionState.textContent = pythonReady ? 'Ready' : 'Ready to load';
+
+  els.prevButton.disabled = currentIndex === 0;
+  els.nextButton.disabled = currentIndex === steps.length - 1;
+
+  const done = Boolean(state.completed[step.id]);
+  els.completeButton.textContent = done ? 'Completed ✓' : 'Mark step complete';
+  els.completeButton.classList.toggle('completed', done);
 }
-els.prev.addEventListener('click',()=>{if(currentIndex>0)go(currentIndex-1);});
-els.next.addEventListener('click',()=>{if(currentIndex<steps.length-1)go(currentIndex+1);});
-els.reset.addEventListener('click',()=>{
-  if(!confirm('Reset all exercise code and progress?'))return;
-  state={done:{},code:{}};saveState();render();
+
+function renderProgress() {
+  const completed = steps.filter(function(step) {
+    return state.completed[step.id];
+  }).length;
+
+  const percent = Math.round((completed / steps.length) * 100);
+  els.progressBar.style.width = percent + '%';
+  els.progressText.textContent =
+    completed + ' of ' + steps.length + ' complete · ' + percent + '%';
+}
+
+function render() {
+  renderNav();
+  renderLesson();
+  renderProgress();
+}
+
+function saveCurrentCode() {
+  const step = steps[currentIndex];
+  state.code[step.id] = els.starterCode.value;
+  saveState();
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+els.starterCode.addEventListener('input', saveCurrentCode);
+
+els.runPython.addEventListener('click', async function() {
+  clearFeedback();
+  saveCurrentCode();
+  setRunning(true, 'Running…');
+  els.runOutput.classList.remove('error-output');
+  els.runOutput.textContent = 'Running Python…';
+
+  await new Promise(function(resolve) {
+    requestAnimationFrame(resolve);
+  });
+
+  try {
+    const result = await executePython(els.starterCode.value, '');
+    els.runOutput.textContent = formatExecution(result);
+    els.runOutput.classList.toggle('error-output', Boolean(result.error));
+    els.executionState.textContent = result.error ? 'Finished with error' : 'Finished';
+  } catch (error) {
+    els.runOutput.textContent = error.message || String(error);
+    els.runOutput.classList.add('error-output');
+    els.executionState.textContent = 'Run failed';
+  } finally {
+    setRunning(false);
+  }
 });
-document.getElementById('menuButton').addEventListener('click',()=>els.sidebar.classList.toggle('open'));
-function applyTheme(theme){
-  document.documentElement.setAttribute('data-theme',theme);
-  localStorage.setItem(themeKey,theme);
-}
-const savedTheme=localStorage.getItem(themeKey);
-if(savedTheme)applyTheme(savedTheme);
-else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)applyTheme('dark');
-document.getElementById('themeButton').addEventListener('click',()=>{
-  applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+
+els.checkAnswer.addEventListener('click', async function() {
+  const step = steps[currentIndex];
+
+  clearFeedback();
+  saveCurrentCode();
+  setRunning(true, 'Checking…');
+  els.runOutput.classList.remove('error-output');
+  els.runOutput.textContent = 'Running Python and checking your answer…';
+
+  await new Promise(function(resolve) {
+    requestAnimationFrame(resolve);
+  });
+
+  try {
+    const result = await executePython(els.starterCode.value, step.check || '');
+    els.runOutput.textContent = formatExecution(result);
+    els.runOutput.classList.toggle('error-output', Boolean(result.error));
+
+    let passed = false;
+    let feedback = '';
+
+    if (step.expectedError) {
+      passed = result.error_type === step.expectedError;
+      feedback = passed
+        ? 'Correct — your code raised ' + step.expectedError + '.'
+        : 'Not yet — expected ' + step.expectedError + ', but got ' +
+          (result.error_type || 'no error') + '.';
+    } else if (result.error) {
+      feedback =
+        'Your code raised ' + result.error_type + '. Fix the error and try again.';
+    } else if (result.test_error) {
+      feedback =
+        result.test_error.replace(/^AssertionError:\s*/, '') ||
+        'The result does not pass the exercise checks yet.';
+    } else if (step.check) {
+      passed = true;
+      feedback = 'Correct — your code passes the checks.';
+    } else {
+      passed = true;
+      feedback = 'Code ran successfully.';
+    }
+
+    els.checkFeedback.hidden = false;
+    els.checkFeedback.className =
+      'check-feedback ' + (passed ? 'success' : 'failure');
+    els.checkFeedback.textContent = feedback;
+    els.executionState.textContent = passed ? 'Check passed' : 'Check failed';
+
+    if (passed) {
+      state.completed[step.id] = true;
+      saveState();
+      renderNav();
+      renderProgress();
+      els.completeButton.textContent = 'Completed ✓';
+      els.completeButton.classList.add('completed');
+    }
+  } catch (error) {
+    els.runOutput.textContent = error.message || String(error);
+    els.runOutput.classList.add('error-output');
+    els.executionState.textContent = 'Check failed';
+  } finally {
+    setRunning(false);
+  }
 });
+
+els.clearOutput.addEventListener('click', function() {
+  clearFeedback();
+  els.runOutput.classList.remove('error-output');
+  els.runOutput.textContent = pythonReady
+    ? 'Output cleared. Run your code again.'
+    : 'Python runtime is loading…';
+  els.executionState.textContent = pythonReady ? 'Ready' : 'Loading Python…';
+});
+
+els.resetCode.addEventListener('click', function() {
+  const step = steps[currentIndex];
+  els.starterCode.value = step.starter;
+  state.code[step.id] = step.starter;
+  saveState();
+});
+
+els.solutionButton.addEventListener('click', function() {
+  const opening = els.solutionPanel.hidden;
+  els.solutionPanel.hidden = !opening;
+  els.solutionButton.textContent = opening ? 'Hide solution' : 'Show solution';
+});
+
+els.prevButton.addEventListener('click', function() {
+  if (currentIndex === 0) return;
+  saveCurrentCode();
+  currentIndex -= 1;
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+els.nextButton.addEventListener('click', function() {
+  if (currentIndex >= steps.length - 1) return;
+  saveCurrentCode();
+  currentIndex += 1;
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+els.completeButton.addEventListener('click', function() {
+  const step = steps[currentIndex];
+  state.completed[step.id] = !state.completed[step.id];
+  saveState();
+  render();
+});
+
+els.resetProgress.addEventListener('click', function() {
+  const confirmed = window.confirm(
+    'Reset completion progress and practice code for all 21 steps?'
+  );
+
+  if (!confirmed) return;
+
+  state = { completed: {}, code: {} };
+  saveState();
+  render();
+});
+
+els.menuButton.addEventListener('click', function() {
+  els.sidebar.classList.toggle('open');
+});
+
+document.addEventListener('click', function(event) {
+  const copy = event.target.closest('[data-copy]');
+  if (!copy) return;
+
+  const target = document.getElementById(copy.getAttribute('data-copy'));
+  if (!target) return;
+
+  navigator.clipboard.writeText(target.textContent).then(function() {
+    const original = copy.textContent;
+    copy.textContent = 'Copied';
+
+    setTimeout(function() {
+      copy.textContent = original;
+    }, 900);
+  });
+});
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem(themeKey, theme);
+}
+
+const savedTheme = localStorage.getItem(themeKey);
+
+if (savedTheme) {
+  applyTheme(savedTheme);
+} else if (
+  window.matchMedia &&
+  window.matchMedia('(prefers-color-scheme: dark)').matches
+) {
+  applyTheme('dark');
+}
+
+els.themeButton.addEventListener('click', function() {
+  const current =
+    document.documentElement.getAttribute('data-theme') || 'light';
+
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+});
+
 render();
-els.runtime.textContent='Python loads on first Run/Check · terminal commands run on your computer.';
+els.runPython.disabled = false;
+els.checkAnswer.disabled = false;
+els.runtimeDot.className = 'runtime-dot';
+els.runtimeText.textContent = 'Python loads on first run · internet required';
+els.executionState.textContent = 'Ready to load';
+els.runOutput.textContent = 'Click Run Python to load the browser runtime.';

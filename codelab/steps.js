@@ -2,376 +2,418 @@
 window.CODELAB_MODULES=[
   {
     "title": "Introduction to Python Programming",
-    "source": "Lecture 1 · 26 slides"
+    "source": "1(4).pptx · 26 slides"
   },
   {
-    "title": "Variables & Data Types",
-    "source": "Lecture 2 · 22 slides"
+    "title": "Variables and Data Types",
+    "source": "2(4).pptx · 22 slides"
   },
   {
-    "title": "Conditions & If Statements",
-    "source": "Lecture 3 · 20 slides"
+    "title": "Conditions and If Statements",
+    "source": "3(4).pptx · 20 slides"
   }
 ];
 window.CODELAB_STEPS=[
   {
     "id": 1,
     "unit": 1,
-    "title": "Setup & Hello World",
-    "slides": "Lecture 1 · slides 8–11",
-    "time": "7 min",
-    "learn": "Write and execute your first Python program. `print()` sends text to the output.",
+    "title": "Python & Hello World",
+    "slides": "Lecture 1 · slides 5–11",
+    "time": "4 min",
+    "learn": "Python is a high-level, readable programming language used for many tasks, including machine learning.",
     "bullets": [
-      "Check Python in the terminal: python --version (or py --version on Windows).",
-      "Create an isolated environment: python -m venv .venv.",
-      "Text in quotes is a string. print() displays it."
+      "Created by Guido van Rossum in 1991; Python is free and open source.",
+      "Install Python from python.org/downloads. Jupyter Notebook is another environment for running Python.",
+      "Use print() to display a message. The online editor runs Python in your browser."
     ],
-    "example": "print(\"Hello, World!\")",
+    "example": "print('Hello, World!')",
     "output": "Hello, World!",
-    "challenge": "Edit the program so it prints Hello, Machine Learning! exactly.",
-    "starter": "print(\"Hello, World!\")",
-    "solution": "print(\"Hello, Machine Learning!\")",
-    "takeaway": "Keep each project in its own virtual environment. The online Codelab runs without a local installation.",
-    "check": "assert \"Hello, Machine Learning!\" in __output__, \"Print Hello, Machine Learning! exactly.\""
+    "challenge": "Change the message to Hello, Python! and print it.",
+    "starter": "print('Hello, World!')",
+    "solution": "print('Hello, Python!')",
+    "takeaway": "",
+    "check": "assert __output__.strip() == 'Hello, Python!', 'Print Hello, Python! exactly.'"
   },
   {
     "id": 2,
     "unit": 1,
-    "title": "Variables & print()",
-    "slides": "Lecture 1 · slides 11–14",
-    "time": "6 min",
-    "learn": "Variables name values. Use = to assign them and f-strings to display them.",
+    "title": "Variables & Type Conversion",
+    "slides": "Lecture 1 · slides 13–15",
+    "time": "4 min",
+    "learn": "Variables hold values without requiring an explicit type declaration. Conversion functions change a value's type.",
     "bullets": [
-      "Python variables are dynamically typed.",
-      "Use descriptive snake_case names such as model_name.",
-      "In an f-string, {name} inserts the variable's value."
+      "Assign values using =, such as x = 10 and y = 'Hello'.",
+      "int(), float(), and str() convert between common types."
     ],
-    "example": "model_name = \"Baseline\"\naccuracy = 0.85\nprint(model_name, accuracy)\nprint(f\"Model: {model_name}\")",
-    "output": "Baseline 0.85\nModel: Baseline",
-    "challenge": "Create a variable called epochs with value 10, then print Epochs: 10 using an f-string.",
-    "starter": "model_name = \"Baseline\"\n# Your turn: add epochs and print the label",
-    "solution": "epochs = 10\nprint(f\"Epochs: {epochs}\")",
-    "takeaway": "For experiment settings and metrics, choose descriptive names rather than `x` or `a`.",
-    "check": "assert epochs == 10, \"Set epochs to 10.\"\nassert \"Epochs: 10\" in __output__, \"Print Epochs: 10.\""
+    "example": "x = 10\ny = 'Hello'\nprint(x, y)\nprint(int('20') + x)",
+    "output": "10 Hello\n30",
+    "challenge": "Convert the string '5' to an integer, add 10, and save the result as total.",
+    "starter": "total = 0\n# Convert '5' and add 10\nprint(total)",
+    "solution": "total = int('5') + 10\nprint(total)",
+    "takeaway": "",
+    "check": "assert total == 15, 'Use int() to convert the text.'"
   },
   {
     "id": 3,
     "unit": 1,
-    "title": "Operators & type conversion",
-    "slides": "Lecture 1 · slides 15–16",
-    "time": "7 min",
-    "learn": "Convert numeric strings before calculating; learn /, //, %, and **.",
+    "title": "Python Operators",
+    "slides": "Lecture 1 · slide 16",
+    "time": "4 min",
+    "learn": "Operators let Python perform calculations and compare or combine values.",
     "bullets": [
-      "int('4') and float('0.5') convert strings to numbers.",
-      "/ divides; // floor-divides; % returns the remainder.",
-      "** calculates powers. == compares values, = assigns values."
+      "Arithmetic operators: +, -, *, /, //, %, **.",
+      "Comparisons like > and == return Boolean values. Logical operators include and, or, not.",
+      "Python also supports bitwise operators such as & (bitwise AND)."
     ],
-    "example": "batches = int(\"4\")\nitems_per_batch = 8\ncount = batches * items_per_batch\nprint(\"Samples:\", count)\nprint(\"Remainder:\", count % 5)",
-    "output": "Samples: 32\nRemainder: 2",
-    "challenge": "Convert the string '12' to a number and multiply it by 3. Store the answer in total.",
-    "starter": "raw = \"12\"\n# Your turn: define total\nprint(total)",
-    "solution": "raw = \"12\"\ntotal = int(raw) * 3\nprint(total)",
-    "takeaway": "`int('hello')` raises `ValueError`: validate imported numbers rather than silently assuming they are valid.",
-    "check": "assert total == 36, \"Expected total = int(raw) * 3.\""
+    "example": "print(10 + 3)\nprint(10 > 3)\nprint(True and False)\nprint(5 & 3)",
+    "output": "13\nTrue\nFalse\n1",
+    "challenge": "Create sum_result = 6 + 4 and is_equal = (6 == 4).",
+    "starter": "sum_result = 0\nis_equal = True\nprint(sum_result, is_equal)",
+    "solution": "sum_result = 6 + 4\nis_equal = (6 == 4)\nprint(sum_result, is_equal)",
+    "takeaway": "",
+    "check": "assert sum_result == 10 and is_equal is False, 'Calculate the sum and equality comparison.'"
   },
   {
     "id": 4,
     "unit": 1,
-    "title": "For & while loops",
+    "title": "For & While Loops",
     "slides": "Lecture 1 · slide 19",
-    "time": "7 min",
-    "learn": "Use for to visit items and while to repeat based on a condition.",
+    "time": "4 min",
+    "learn": "Loops repeat code. for iterates through a sequence, while repeats while a condition is true.",
     "bullets": [
-      "for item in items iterates through a collection.",
-      "range(1, 6) yields 1 through 5 (stop excluded).",
-      "A while loop must eventually make its condition false."
+      "A for loop goes through items or numbers produced by range().",
+      "A while loop needs a changing condition so it eventually ends."
     ],
-    "example": "scores = [3, 5, 7]\ntotal = 0\nfor score in scores:\n    total += score\nprint(\"Sum:\", total)\ncountdown = 2\nwhile countdown > 0:\n    countdown -= 1\nprint(\"Done\")",
-    "output": "Sum: 15\nDone",
-    "challenge": "Use a for loop to calculate the sum of numbers 1 through 5 in a variable named total.",
-    "starter": "total = 0\n# Your turn: loop through range(1, 6)\nprint(\"Sum:\", total)",
-    "solution": "total = 0\nfor number in range(1, 6):\n    total += number\nprint(\"Sum:\", total)",
-    "takeaway": "For large numeric arrays, use array operations when appropriate instead of slow Python-level loops.",
-    "check": "assert total == 15, \"The sum of 1 through 5 should be 15.\""
+    "example": "for i in range(3):\n    print(i)\n\ncount = 0\nwhile count < 2:\n    count += 1\nprint('Count:', count)",
+    "output": "0\n1\n2\nCount: 2",
+    "challenge": "Use a for loop to sum 1 to 3 in total. Then use while to increase count from 0 to 2.",
+    "starter": "total = 0\ncount = 0\n# Add a for loop and a while loop\nprint(total, count)",
+    "solution": "total = 0\nfor number in range(1, 4):\n    total += number\ncount = 0\nwhile count < 2:\n    count += 1\nprint(total, count)",
+    "takeaway": "",
+    "check": "assert total == 6 and count == 2, 'Practice both for and while loops.'"
   },
   {
     "id": 5,
     "unit": 1,
-    "title": "Functions & lambda",
-    "slides": "Lecture 1 · slides 21–22",
-    "time": "7 min",
-    "learn": "Define reusable functions with def and return; use lambda for one expression.",
+    "title": "Functions with def",
+    "slides": "Lecture 1 · slide 21",
+    "time": "4 min",
+    "learn": "A function is a reusable block of code defined using def. return provides its result.",
     "bullets": [
-      "Parameters receive inputs; return sends a result back.",
-      "A function without return produces None.",
-      "lambda x: x * 2 is a one-expression function."
+      "Parameters receive values when the function is called.",
+      "Indent the function body and use return to send a value back."
     ],
-    "example": "def add(a, b):\n    return a + b\n\ndouble = lambda x: x * 2\nprint(add(3, 4))\nprint(double(5))",
-    "output": "7\n10",
-    "challenge": "Define multiply(a, b) that returns the product, and print multiply(3, 4).",
-    "starter": "# Your turn: define multiply(a, b)\nprint(multiply(3, 4))",
-    "solution": "def multiply(a, b):\n    return a * b\n\nprint(multiply(3, 4))",
-    "takeaway": "Small functions that return results are easier to test and reuse in data-processing code.",
-    "check": "assert multiply(3, 4) == 12, \"multiply(3, 4) must return 12.\"\nassert multiply(0, 10) == 0, \"Check the zero case.\""
+    "example": "def add(a, b):\n    return a + b\n\nprint(add(2, 3))",
+    "output": "5",
+    "challenge": "Create a function multiply(a, b) that returns the product.",
+    "starter": "def multiply(a, b):\n    pass\n\nprint(multiply(2, 4))",
+    "solution": "def multiply(a, b):\n    return a * b\n\nprint(multiply(2, 4))",
+    "takeaway": "",
+    "check": "assert multiply(2, 4) == 8 and multiply(3, 5) == 15, 'Return a * b.'"
   },
   {
     "id": 6,
     "unit": 1,
-    "title": "Classes & objects",
-    "slides": "Lecture 1 · slide 23",
-    "time": "7 min",
-    "learn": "Classes group attributes and methods; objects are individual instances.",
+    "title": "Lambda Functions",
+    "slides": "Lecture 1 · slide 22",
+    "time": "4 min",
+    "learn": "A lambda is a short anonymous function written as a single expression.",
     "bullets": [
-      "class defines a type; Model('Baseline') constructs an object.",
-      "__init__ initializes data when the object is created.",
-      "self.name belongs to the current instance."
+      "Lambda syntax: lambda parameters: expression.",
+      "The result of the expression is returned automatically."
     ],
-    "example": "class Model:\n    def __init__(self, name):\n        self.name = name\n\nmodel = Model(\"Baseline\")\nprint(model.name)",
-    "output": "Baseline",
-    "challenge": "Add a method describe(self) that returns 'Model: ' followed by the object's name.",
-    "starter": "class Model:\n    def __init__(self, name):\n        self.name = name\n    # Your turn: add describe(self)\n\nmodel = Model(\"Baseline\")\nprint(model.describe())",
-    "solution": "class Model:\n    def __init__(self, name):\n        self.name = name\n\n    def describe(self):\n        return \"Model: \" + self.name\n\nmodel = Model(\"Baseline\")\nprint(model.describe())",
-    "takeaway": "Class-based model APIs often organize configuration and behavior this way.",
-    "check": "assert Model(\"Baseline\").describe() == \"Model: Baseline\", \"describe() must include the model name.\"\nassert Model(\"Tree\").describe() == \"Model: Tree\", \"Do not hard-code a single name.\""
+    "example": "add = lambda x, y: x + y\nprint(add(2, 3))",
+    "output": "5",
+    "challenge": "Create a lambda named double that multiplies its input by 2.",
+    "starter": "double = lambda x: x\nprint(double(4))",
+    "solution": "double = lambda x: x * 2\nprint(double(4))",
+    "takeaway": "",
+    "check": "assert double(4) == 8 and double(6) == 12, 'Return twice the input.'"
   },
   {
     "id": 7,
     "unit": 1,
-    "title": "Exception handling",
-    "slides": "Lecture 1 · slide 24",
-    "time": "7 min",
-    "learn": "Use try/except for expected errors and finally for cleanup.",
+    "title": "Classes & Objects",
+    "slides": "Lecture 1 · slide 23",
+    "time": "4 min",
+    "learn": "Classes are templates for creating objects. __init__ initializes an object's data.",
     "bullets": [
-      "int('bad') raises ValueError.",
-      "Catch specific exceptions, not every possible error.",
-      "finally runs after try/except, even when an exception occurs."
+      "class Dog defines a class; Dog('Max') creates an object.",
+      "self.name stores a name inside that object."
     ],
-    "example": "try:\n    value = int(\"not-a-number\")\nexcept ValueError:\n    value = 0\nfinally:\n    print(\"Conversion attempted\")\nprint(value)",
-    "output": "Conversion attempted\n0",
-    "challenge": "Write a function safe_int(text) that returns int(text), or -1 when conversion fails with ValueError.",
-    "starter": "def safe_int(text):\n    # Your turn: use try/except ValueError\n    pass\n\nprint(safe_int(\"8\"), safe_int(\"bad\"))",
-    "solution": "def safe_int(text):\n    try:\n        return int(text)\n    except ValueError:\n        return -1\n\nprint(safe_int(\"8\"), safe_int(\"bad\"))",
-    "takeaway": "A fallback value must be intentional; for real datasets, consider recording invalid rows.",
-    "check": "assert safe_int(\"8\") == 8, \"A valid number should convert to int.\"\nassert safe_int(\"bad\") == -1, \"Return -1 for invalid text.\""
+    "example": "class Dog:\n    def __init__(self, name):\n        self.name = name\n\ndog = Dog('Max')\nprint(dog.name)",
+    "output": "Max",
+    "challenge": "Create an object named pet from Dog with the name 'Rex'.",
+    "starter": "class Dog:\n    def __init__(self, name):\n        self.name = name\n\n# Create pet\nprint(pet.name)",
+    "solution": "class Dog:\n    def __init__(self, name):\n        self.name = name\n\npet = Dog('Rex')\nprint(pet.name)",
+    "takeaway": "",
+    "check": "assert isinstance(pet, Dog) and pet.name == 'Rex', 'Create Dog(\\'Rex\\') as pet.'"
   },
   {
     "id": 8,
-    "unit": 2,
-    "title": "Numeric, string & Boolean types",
-    "slides": "Lecture 2 · slides 5–9",
-    "time": "6 min",
-    "learn": "Learn int, float, complex, str, and bool, and inspect them with type().",
+    "unit": 1,
+    "title": "Exception Handling",
+    "slides": "Lecture 1 · slide 24",
+    "time": "4 min",
+    "learn": "try, except, and finally help handle errors in a controlled way.",
     "bullets": [
-      "int and float store numeric values; str stores text.",
-      "bool values are True and False.",
-      "Non-empty strings are truthy, even the string 'False'."
+      "try contains code that might fail; except handles the error.",
+      "finally executes whether an error occurred or not."
     ],
-    "example": "age = 35\nprice = 3.5\nname = \"Python\"\nactive = True\nprint(type(age).__name__, type(price).__name__)\nprint(name.upper(), active)",
-    "output": "int float\nPYTHON True",
-    "challenge": "Create threshold as a float of 0.7 and flag as a Boolean True.",
-    "starter": "# Your turn: define threshold and flag\nprint(threshold, flag)",
-    "solution": "threshold = 0.7\nflag = True\nprint(threshold, flag)",
-    "takeaway": "When preparing features, distinguish numeric values from categorical strings and Boolean flags.",
-    "check": "assert type(threshold) is float and threshold == 0.7, \"threshold must be the float 0.7.\"\nassert type(flag) is bool and flag is True, \"flag must be True (bool).\""
+    "example": "try:\n    number = int('abc')\nexcept ValueError:\n    print('Invalid number')\nfinally:\n    print('Finished')",
+    "output": "Invalid number\nFinished",
+    "challenge": "Handle ValueError from int('bad') and always print 'Done' using finally.",
+    "starter": "try:\n    number = int('bad')\n# Complete except and finally",
+    "solution": "try:\n    number = int('bad')\nexcept ValueError:\n    print('Invalid')\nfinally:\n    print('Done')",
+    "takeaway": "",
+    "check": "assert 'Done' in __output__.splitlines(), 'Use finally to print Done.'\nassert 'Invalid' in __output__.splitlines(), 'Handle ValueError using except.'"
   },
   {
     "id": 9,
     "unit": 2,
-    "title": "Lists: indexing & mutation",
-    "slides": "Lecture 2 · slide 11",
-    "time": "7 min",
-    "learn": "Lists are ordered and mutable; use indexing, slicing, and list methods.",
+    "title": "Variables & Numeric Types",
+    "slides": "Lecture 2 · slides 5–7",
+    "time": "4 min",
+    "learn": "Python variables are dynamically typed. Numeric types include int, float, and complex.",
     "bullets": [
-      "Indexing starts at 0; -1 means the last element.",
-      "append(), insert(), and remove() modify the list.",
-      "A slice values[1:3] excludes index 3."
+      "int represents whole numbers, float decimals, and complex numbers with a real and imaginary part.",
+      "Use type() to see a value's type."
     ],
-    "example": "scores = [70, 80, 90]\nscores.append(100)\nprint(scores[0], scores[-1])\nprint(scores[1:3])",
-    "output": "70 100\n[80, 90]",
-    "challenge": "Starting with scores = [70, 80, 90], insert 75 at position 1 and remove 90.",
-    "starter": "scores = [70, 80, 90]\n# Your turn: insert and remove\nprint(scores)",
-    "solution": "scores = [70, 80, 90]\nscores.insert(1, 75)\nscores.remove(90)\nprint(scores)",
-    "takeaway": "`.append()` modifies the list and returns `None`, so do not assign its result back to the list.",
-    "check": "assert scores == [70, 75, 80], \"Expected [70, 75, 80].\""
+    "example": "x = 5\ny = 3.14\nz = 2 + 3j\nprint(type(x).__name__)\nprint(type(y).__name__)\nprint(type(z).__name__)",
+    "output": "int\nfloat\ncomplex",
+    "challenge": "Define num = 7.5 and print its type.",
+    "starter": "num = 0\nprint(type(num).__name__)",
+    "solution": "num = 7.5\nprint(type(num).__name__)",
+    "takeaway": "",
+    "check": "assert isinstance(num, float) and num == 7.5, 'Create the float 7.5.'"
   },
   {
     "id": 10,
     "unit": 2,
-    "title": "Tuples & unpacking",
-    "slides": "Lecture 2 · slide 12",
-    "time": "6 min",
-    "learn": "Tuples are ordered but immutable; use unpacking for fixed-size records.",
+    "title": "Strings & Booleans",
+    "slides": "Lecture 2 · slides 8–9",
+    "time": "4 min",
+    "learn": "A string contains characters in quotes. A Boolean represents True or False.",
     "bullets": [
-      "(3, 4) is a tuple; (3,) creates a single-item tuple.",
-      "x, y = point unpacks a pair.",
-      "Tuple elements cannot be reassigned."
+      "Strings use single or double quotation marks.",
+      "Boolean values are written True and False."
     ],
-    "example": "point = (3, 4)\nx, y = point\nprint(\"x:\", x, \"y:\", y)\nprint(\"Length:\", len(point))",
-    "output": "x: 3 y: 4\nLength: 2",
-    "challenge": "Unpack the tuple shape = (128, 64) into rows and columns, then print them.",
-    "starter": "shape = (128, 64)\n# Your turn: unpack rows and columns\nprint(rows, columns)",
-    "solution": "shape = (128, 64)\nrows, columns = shape\nprint(rows, columns)",
-    "takeaway": "Dataset shapes are often represented as tuples, such as `(128, 64)`.",
-    "check": "assert rows == 128 and columns == 64, \"Unpack shape into rows and columns.\""
+    "example": "name = 'John'\nstatus = True\nprint(name)\nprint(status)",
+    "output": "John\nTrue",
+    "challenge": "Create name = 'Alice' and status = False and print both.",
+    "starter": "name = ''\nstatus = True\nprint(name)\nprint(status)",
+    "solution": "name = 'Alice'\nstatus = False\nprint(name)\nprint(status)",
+    "takeaway": "",
+    "check": "assert name == 'Alice' and status is False, 'Use a string and a Boolean.'"
   },
   {
     "id": 11,
     "unit": 2,
-    "title": "Dictionaries: keyed data",
-    "slides": "Lecture 2 · slide 14",
-    "time": "7 min",
-    "learn": "Dictionaries map keys to values, making named data easy to access.",
+    "title": "Lists",
+    "slides": "Lecture 2 · slide 11",
+    "time": "4 min",
+    "learn": "Lists are ordered, mutable sequences. Their elements are accessible by index.",
     "bullets": [
-      "data['key'] reads a key; it raises KeyError if missing.",
-      "data.get('key', default) provides a fallback.",
-      "Use keys(), values(), or items() when iterating."
+      "Write a list with square brackets: [1, 2, 3].",
+      "append(), insert(), and remove() change a list; indexing starts at 0."
     ],
-    "example": "settings = {\"model\": \"baseline\", \"epochs\": 10}\nsettings[\"epochs\"] = 12\nprint(settings[\"model\"])\nprint(settings.get(\"batch_size\", 32))",
-    "output": "baseline\n32",
-    "challenge": "Create a dictionary config with 'learning_rate': 0.01 and 'epochs': 20.",
-    "starter": "config = {}\n# Your turn: add two configuration keys\nprint(config)",
-    "solution": "config = {\"learning_rate\": 0.01, \"epochs\": 20}\nprint(config)",
-    "takeaway": "Dictionaries are commonly used for hyperparameters, metadata and experiment configurations.",
-    "check": "assert config.get(\"learning_rate\") == 0.01, \"Set learning_rate = 0.01.\"\nassert config.get(\"epochs\") == 20, \"Set epochs = 20.\""
+    "example": "values = [1, 2, 3]\nvalues.append(4)\nvalues.insert(0, 0)\nvalues.remove(2)\nprint(values)\nprint(values[0])",
+    "output": "[0, 1, 3, 4]\n0",
+    "challenge": "Starting with [1, 2, 3], append 4, then remove 2.",
+    "starter": "values = [1, 2, 3]\n# Change the list\nprint(values)",
+    "solution": "values = [1, 2, 3]\nvalues.append(4)\nvalues.remove(2)\nprint(values)",
+    "takeaway": "",
+    "check": "assert values == [1, 3, 4], 'Use append and remove.'"
   },
   {
     "id": 12,
     "unit": 2,
-    "title": "Sets: unique items",
-    "slides": "Lecture 2 · slide 15",
-    "time": "6 min",
-    "learn": "Sets keep unique values and support fast membership and set operations.",
+    "title": "Tuples",
+    "slides": "Lecture 2 · slide 12",
+    "time": "4 min",
+    "learn": "Tuples are ordered but immutable sequences. You can unpack their values into variables.",
     "bullets": [
-      "Duplicate values are removed automatically.",
-      "| is union, & is intersection, - is difference.",
-      "Sets are unordered. Create an empty set with set()."
+      "Use parentheses: (1, 2, 3).",
+      "Unpack using a, b, c = (1, 2, 3)."
     ],
-    "example": "train = {\"cat\", \"dog\"}\ntest = {\"dog\", \"bird\"}\nprint(sorted(train | test))\nprint(sorted(train & test))",
-    "output": "['bird', 'cat', 'dog']\n['dog']",
-    "challenge": "Create a set unique_labels from ['cat', 'cat', 'dog', 'bird'], and print its length.",
-    "starter": "labels = [\"cat\", \"cat\", \"dog\", \"bird\"]\n# Your turn: create unique_labels\nprint(len(unique_labels))",
-    "solution": "labels = [\"cat\", \"cat\", \"dog\", \"bird\"]\nunique_labels = set(labels)\nprint(len(unique_labels))",
-    "takeaway": "Sets are convenient for comparing label names across train and test datasets.",
-    "check": "assert unique_labels == {\"cat\", \"dog\", \"bird\"}, \"Keep every unique label exactly once.\""
+    "example": "numbers = (1, 2, 3)\na, b, c = numbers\nprint(a, b, c)",
+    "output": "1 2 3",
+    "challenge": "Unpack the tuple (4, 5, 6) into x, y, and z.",
+    "starter": "x, y, z = (0, 0, 0)\nprint(x, y, z)",
+    "solution": "x, y, z = (4, 5, 6)\nprint(x, y, z)",
+    "takeaway": "",
+    "check": "assert (x, y, z) == (4, 5, 6), 'Unpack the three values.'"
   },
   {
     "id": 13,
     "unit": 2,
-    "title": "Mutable, immutable & variable scope",
-    "slides": "Lecture 2 · slides 17–19",
-    "time": "8 min",
-    "learn": "Understand mutable objects, shallow copies, and function-local variables.",
+    "title": "Dictionaries",
+    "slides": "Lecture 2 · slide 14",
+    "time": "4 min",
+    "learn": "Dictionaries store values in key-value pairs.",
     "bullets": [
-      "Lists and dictionaries are mutable; strings and tuples are not.",
-      "alias = original does not copy a list.",
-      "copy() makes a shallow copy; function variables are local by default."
+      "Read a value using a key, for example data['name'].",
+      "Common methods are keys(), values(), items(), and update()."
     ],
-    "example": "original = [1, 2]\nalias = original\nalias.append(3)\nprint(original)\n\ndef doubled(value):\n    result = value * 2\n    return result\nprint(doubled(4))",
-    "output": "[1, 2, 3]\n8",
-    "challenge": "Create safe_copy from original using .copy(), then append 99 without changing original.",
-    "starter": "original = [1, 2]\n# Your turn: make an independent list named safe_copy\n# Append 99 to safe_copy\nprint(original, safe_copy)",
-    "solution": "original = [1, 2]\nsafe_copy = original.copy()\nsafe_copy.append(99)\nprint(original, safe_copy)",
-    "takeaway": "Avoid accidentally sharing mutable sample lists between steps in a preprocessing pipeline.",
-    "check": "assert original == [1, 2], \"Do not mutate original.\"\nassert safe_copy == [1, 2, 99], \"Append 99 to the copy.\"\nassert safe_copy is not original, \"Create a separate list object.\""
+    "example": "person = {'name': 'Alice', 'age': 25}\nprint(person['name'])\nprint(list(person.keys()))\nperson.update({'age': 26})\nprint(person['age'])",
+    "output": "Alice\n['name', 'age']\n26",
+    "challenge": "Create a dictionary person containing name = 'Bob' and age = 30.",
+    "starter": "person = {}\nprint(person)",
+    "solution": "person = {'name': 'Bob', 'age': 30}\nprint(person)",
+    "takeaway": "",
+    "check": "assert person == {'name': 'Bob', 'age': 30}, 'Create the key-value pairs.'"
   },
   {
     "id": 14,
-    "unit": 3,
-    "title": "Comparisons, if & else",
-    "slides": "Lecture 3 · slides 5–7",
-    "time": "7 min",
-    "learn": "Use if/else for decisions and indentation to define each branch.",
+    "unit": 2,
+    "title": "Sets",
+    "slides": "Lecture 2 · slide 15",
+    "time": "4 min",
+    "learn": "Sets are unordered collections of unique elements.",
     "bullets": [
-      "Comparisons like >= and == return Boolean values.",
-      "Use a colon and indentation for each block.",
-      ">= includes the boundary value."
+      "A set removes repeated elements.",
+      "union combines sets, intersection finds common elements, and difference finds elements in one set but not the other."
     ],
-    "example": "age = 18\nif age >= 18:\n    label = \"Adult\"\nelse:\n    label = \"Minor\"\nprint(label)",
-    "output": "Adult",
-    "challenge": "Write a function age_group(age) that returns 'Adult' for 18 or older and 'Minor' otherwise.",
-    "starter": "def age_group(age):\n    # Your turn: if / else\n    pass\n\nprint(age_group(18))",
-    "solution": "def age_group(age):\n    if age >= 18:\n        return \"Adult\"\n    else:\n        return \"Minor\"\n\nprint(age_group(18))",
-    "takeaway": "Test boundary values such as 17, 18 and 19 when writing threshold logic.",
-    "check": "assert age_group(18) == \"Adult\", \"Check the inclusive boundary.\"\nassert age_group(17) == \"Minor\", \"Check below the boundary.\"\nassert age_group(40) == \"Adult\", \"Check above the boundary.\""
+    "example": "a = {1, 2, 3}\nb = {3, 4}\nprint(sorted(a | b))\nprint(sorted(a & b))\nprint(sorted(a - b))",
+    "output": "[1, 2, 3, 4]\n[3]\n[1, 2]",
+    "challenge": "Using sets a and b, save their intersection in common.",
+    "starter": "a = {1, 2, 3}\nb = {3, 4}\ncommon = set()\nprint(common)",
+    "solution": "a = {1, 2, 3}\nb = {3, 4}\ncommon = a & b\nprint(common)",
+    "takeaway": "",
+    "check": "assert common == {3}, 'Use intersection (&).'"
   },
   {
     "id": 15,
-    "unit": 3,
-    "title": "Elif: several branches",
-    "slides": "Lecture 3 · slides 8–10",
-    "time": "7 min",
-    "learn": "Use elif for several mutually exclusive cases; check conditions top to bottom.",
+    "unit": 2,
+    "title": "Mutable, Immutable & Dynamic Typing",
+    "slides": "Lecture 2 · slides 17–18",
+    "time": "4 min",
+    "learn": "Lists and dictionaries are mutable, while tuples and strings are immutable. Python names can refer to values of different types.",
     "bullets": [
-      "The first matching if/elif branch wins.",
-      "Put the higher threshold before the lower one.",
-      "else handles values that matched no earlier branch."
+      "A mutable object can be changed after creation.",
+      "Dynamic typing allows reassigning a variable from one type to another."
     ],
-    "example": "score = 85\nif score >= 90:\n    grade = \"A\"\nelif score >= 80:\n    grade = \"B\"\nelse:\n    grade = \"C\"\nprint(grade)",
-    "output": "B",
-    "challenge": "Define grade_for(score) with A for score >= 90, B for >= 80, otherwise C.",
-    "starter": "def grade_for(score):\n    # Your turn: if, elif, else\n    pass\n\nprint(grade_for(85))",
-    "solution": "def grade_for(score):\n    if score >= 90:\n        return \"A\"\n    elif score >= 80:\n        return \"B\"\n    else:\n        return \"C\"\n\nprint(grade_for(85))",
-    "takeaway": "Ordering thresholds correctly prevents classification rules from shadowing one another.",
-    "check": "assert grade_for(95) == \"A\", \"Check the A threshold.\"\nassert grade_for(90) == \"A\", \"Check the A boundary.\"\nassert grade_for(85) == \"B\", \"Check the B range.\"\nassert grade_for(79) == \"C\", \"Check the fallback.\""
+    "example": "numbers = [1, 2]\nnumbers.append(3)\nvalue = 10\nvalue = 'ten'\nprint(numbers)\nprint(value)",
+    "output": "[1, 2, 3]\nten",
+    "challenge": "Append 4 to numbers and change value from 10 to the string 'ten'.",
+    "starter": "numbers = [1, 2, 3]\nvalue = 10\n# Change both\nprint(numbers, value)",
+    "solution": "numbers = [1, 2, 3]\nnumbers.append(4)\nvalue = 10\nvalue = 'ten'\nprint(numbers, value)",
+    "takeaway": "",
+    "check": "assert numbers == [1, 2, 3, 4] and value == 'ten', 'Change the list and reassign the variable.'"
   },
   {
     "id": 16,
-    "unit": 3,
-    "title": "Nested if statements",
-    "slides": "Lecture 3 · slides 11–13",
-    "time": "7 min",
-    "learn": "Nested if statements express a second decision inside a first one.",
+    "unit": 2,
+    "title": "Global & Local Variables",
+    "slides": "Lecture 2 · slide 19",
+    "time": "4 min",
+    "learn": "A global variable is defined outside a function; a local variable is defined inside it.",
     "bullets": [
-      "The inner if runs only if the outer condition is true.",
-      "number % 2 == 0 identifies even numbers.",
-      "Indentation determines the nesting structure."
+      "Local variables belong to their function's scope.",
+      "A local name can differ from a global name with the same spelling."
     ],
-    "example": "number = 10\nif number > 0:\n    if number % 2 == 0:\n        print(\"Positive even\")\n    else:\n        print(\"Positive odd\")",
-    "output": "Positive even",
-    "challenge": "Define describe(number): return 'Positive even' if positive and even, 'Positive odd' if positive and odd, and 'Not positive' otherwise.",
-    "starter": "def describe(number):\n    # Your turn: nested conditions\n    pass\n\nprint(describe(10))",
-    "solution": "def describe(number):\n    if number > 0:\n        if number % 2 == 0:\n            return \"Positive even\"\n        else:\n            return \"Positive odd\"\n    return \"Not positive\"\n\nprint(describe(10))",
-    "takeaway": "Multi-stage validation often uses nested conditions, but readability matters more than compactness.",
-    "check": "assert describe(10) == \"Positive even\"\nassert describe(7) == \"Positive odd\"\nassert describe(0) == \"Not positive\"\nassert describe(-2) == \"Not positive\""
+    "example": "x = 10\ndef show():\n    x = 5\n    return x\nprint(show())\nprint(x)",
+    "output": "5\n10",
+    "challenge": "Make show() return 8 using a local x, while the global x stays 10.",
+    "starter": "x = 10\ndef show():\n    x = 0\n    return x\nprint(show(), x)",
+    "solution": "x = 10\ndef show():\n    x = 8\n    return x\nprint(show(), x)",
+    "takeaway": "",
+    "check": "assert show() == 8 and x == 10, 'Keep the global value unchanged.'"
   },
   {
     "id": 17,
     "unit": 3,
-    "title": "and, or & not",
-    "slides": "Lecture 3 · slides 15–16",
-    "time": "7 min",
-    "learn": "Combine conditions using and, or, and not.",
+    "title": "If & Else",
+    "slides": "Lecture 3 · slides 5–7",
+    "time": "4 min",
+    "learn": "If statements select a block of code based on a Boolean condition.",
     "bullets": [
-      "and means both; or means at least one.",
-      "not negates a Boolean value.",
-      "Short-circuiting skips unnecessary checks."
+      "Use if condition: followed by an indented block.",
+      "else handles the alternative when the condition is False."
     ],
-    "example": "score = 0.92\napproved = True\nblocked = False\nif score >= 0.9 and approved and not blocked:\n    print(\"Ready\")\nelse:\n    print(\"Review\")",
-    "output": "Ready",
-    "challenge": "Define can_release(score, approved, blocked). Return True only if score >= 0.9 and approved and not blocked.",
-    "starter": "def can_release(score, approved, blocked):\n    # Your turn: return a Boolean expression\n    pass\n\nprint(can_release(0.95, True, False))",
-    "solution": "def can_release(score, approved, blocked):\n    return score >= 0.9 and approved and not blocked\n\nprint(can_release(0.95, True, False))",
-    "takeaway": "A model release rule might combine quality checks and approval flags, but its actual thresholds must be validated.",
-    "check": "assert can_release(0.95, True, False) is True\nassert can_release(0.85, True, False) is False\nassert can_release(0.95, False, False) is False\nassert can_release(0.95, True, True) is False"
+    "example": "age = 18\nif age >= 18:\n    print('Adult')\nelse:\n    print('Minor')",
+    "output": "Adult",
+    "challenge": "Set age = 16 and print 'Minor' using if/else.",
+    "starter": "age = 16\n# Add if/else",
+    "solution": "age = 16\nif age >= 18:\n    print('Adult')\nelse:\n    print('Minor')",
+    "takeaway": "",
+    "check": "assert __output__.strip() == 'Minor', 'Use if/else for age 16.'"
   },
   {
     "id": 18,
     "unit": 3,
-    "title": "Conditional expression & final practice",
+    "title": "Elif",
+    "slides": "Lecture 3 · slides 8–10",
+    "time": "4 min",
+    "learn": "elif allows additional conditions after an if statement.",
+    "bullets": [
+      "Conditions are evaluated in order.",
+      "The first matching if/elif branch is executed; else is the fallback."
+    ],
+    "example": "score = 85\nif score >= 90:\n    print('A')\nelif score >= 80:\n    print('B')\nelse:\n    print('C')",
+    "output": "B",
+    "challenge": "Set score = 95 and print A using if/elif/else.",
+    "starter": "score = 95\n# Add if/elif/else",
+    "solution": "score = 95\nif score >= 90:\n    print('A')\nelif score >= 80:\n    print('B')\nelse:\n    print('C')",
+    "takeaway": "",
+    "check": "assert __output__.strip() == 'A', 'Check score >= 90 first.'"
+  },
+  {
+    "id": 19,
+    "unit": 3,
+    "title": "Nested If",
+    "slides": "Lecture 3 · slides 12–13",
+    "time": "4 min",
+    "learn": "An if statement can be written inside another if statement.",
+    "bullets": [
+      "The inner condition runs only when the outer condition is True.",
+      "Indentation shows the relationship between the conditions."
+    ],
+    "example": "number = 10\nif number > 0:\n    if number % 2 == 0:\n        print('Even')",
+    "output": "Even",
+    "challenge": "Using a nested if, print Even when number is positive and even.",
+    "starter": "number = 8\n# Add a nested if",
+    "solution": "number = 8\nif number > 0:\n    if number % 2 == 0:\n        print('Even')",
+    "takeaway": "",
+    "check": "assert __output__.strip() == 'Even', 'Use both conditions in a nested if.'"
+  },
+  {
+    "id": 20,
+    "unit": 3,
+    "title": "Logical Operators: and, or, not",
+    "slides": "Lecture 3 · slides 15–16",
+    "time": "4 min",
+    "learn": "Logical operators combine or reverse Boolean conditions.",
+    "bullets": [
+      "and requires both conditions to be True.",
+      "or requires at least one condition to be True.",
+      "not reverses a Boolean value."
+    ],
+    "example": "age = 20\nif age > 18 and age < 30:\n    print('Young Adult')\nscore = 45\nif score < 50 or score > 90:\n    print('Low or High Score')\nstatus = False\nif not status:\n    print('Inactive')",
+    "output": "Young Adult\nLow or High Score\nInactive",
+    "challenge": "With age=20, score=45, and status=False, write the three if statements using and, or, and not.",
+    "starter": "age = 20\nscore = 45\nstatus = False\n# Write three if statements",
+    "solution": "age = 20\nscore = 45\nstatus = False\nif age > 18 and age < 30:\n    print('Young Adult')\nif score < 50 or score > 90:\n    print('Low or High Score')\nif not status:\n    print('Inactive')",
+    "takeaway": "",
+    "check": "assert __output__.splitlines() == ['Young Adult', 'Low or High Score', 'Inactive'], 'Use and, or, and not.'"
+  },
+  {
+    "id": 21,
+    "unit": 3,
+    "title": "Ternary Operator",
     "slides": "Lecture 3 · slide 17",
-    "time": "7 min",
-    "learn": "Use a conditional expression for short two-way assignments.",
+    "time": "4 min",
+    "learn": "A ternary expression is a short way to select one of two values.",
     "bullets": [
       "Syntax: value_if_true if condition else value_if_false.",
-      "Prefer normal if/elif/else for complex branching.",
-      "Probability thresholds are decisions, not model quality scores."
+      "Use it when the decision is short and simple."
     ],
-    "example": "number = 11\nparity = \"Even\" if number % 2 == 0 else \"Odd\"\nprint(parity)\nprobability = 0.8\nlabel = \"positive\" if probability >= 0.5 else \"negative\"\nprint(label)",
-    "output": "Odd\npositive",
-    "challenge": "Define predict_label(probability, threshold=0.5) that returns 'positive' for probability >= threshold, else 'negative'.",
-    "starter": "def predict_label(probability, threshold=0.5):\n    # Your turn: use a conditional expression\n    pass\n\nprint(predict_label(0.7))",
-    "solution": "def predict_label(probability, threshold=0.5):\n    return \"positive\" if probability >= threshold else \"negative\"\n\nprint(predict_label(0.7))",
-    "takeaway": "Prediction thresholds affect false positives and false negatives; experiment metrics are needed to choose them.",
-    "check": "assert predict_label(0.7) == \"positive\"\nassert predict_label(0.3) == \"negative\"\nassert predict_label(0.5) == \"positive\"\nassert predict_label(0.7, threshold=0.8) == \"negative\""
+    "example": "number = 10\nresult = 'Even' if number % 2 == 0 else 'Odd'\nprint(result)",
+    "output": "Even",
+    "challenge": "Set number = 7 and calculate result as Even or Odd with one conditional expression.",
+    "starter": "number = 7\nresult = ''\nprint(result)",
+    "solution": "number = 7\nresult = 'Even' if number % 2 == 0 else 'Odd'\nprint(result)",
+    "takeaway": "",
+    "check": "assert result == 'Odd', 'Use the ternary expression to test parity.'"
   }
 ];
