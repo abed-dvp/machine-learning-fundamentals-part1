@@ -645,8 +645,9 @@ machine-learning-fundamentals-part1/
 ├── index.html                  # Codelab redirect
 ├── codelab/
 │   ├── index.html              # Interactive UI
-│   ├── app.js                  # Python runner and navigation
-│   ├── steps.js                # 18 lessons and exercises
+│   ├── app.js                  # Inline exercises, Python runner and progress
+│   ├── activities.js           # Exercises matched to each concept
+│   ├── steps.js                # 18 lesson summaries and combined exercises
 │   └── styles.css              # Layout and themes
 └── tests/test_lessons.py       # Automated example/solution tests
 ```

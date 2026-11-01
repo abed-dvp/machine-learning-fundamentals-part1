@@ -59,7 +59,7 @@ class TestInlineActivities(unittest.TestCase):
 
     def test_html_wiring(self):
         html = (ROOT / 'codelab' / 'index.html').read_text()
-        for name in ('steps.js','activities.js','app-inline.js'):
+        for name in ('steps.js','activities.js','app.js'):
             self.assertIn(name,html)
             self.assertTrue((ROOT/'codelab'/name).exists())
         for selector in ('activityList','runtimeText','completeButton','stepNav','themeButton'):
