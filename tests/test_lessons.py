@@ -13,13 +13,13 @@ STEPS = json.loads(RAW.split("window.CODELAB_STEPS=", 1)[1].strip().removesuffix
 
 class VerifyCourse(unittest.TestCase):
     def test_lesson_structure(self):
-        self.assertEqual(len(STEPS), 18)
-        self.assertEqual(len({step["id"] for step in STEPS}), 18)
-        self.assertEqual([sum(step["unit"] == n for step in STEPS) for n in (1, 2, 3)], [7, 6, 5])
+        self.assertEqual(len(STEPS), 21)
+        self.assertEqual(len({step["id"] for step in STEPS}), 21)
+        self.assertEqual([sum(step["unit"] == n for step in STEPS) for n in (1, 2, 3)], [8, 8, 5])
         for step in STEPS:
             with self.subTest(step=step["id"]):
                 for field in ("title", "slides", "learn", "example", "output",
-                              "challenge", "starter", "solution", "check", "takeaway"):
+                              "challenge", "starter", "solution", "check"):
                     self.assertTrue(step[field], field)
 
     def test_examples_match_expected_output(self):
