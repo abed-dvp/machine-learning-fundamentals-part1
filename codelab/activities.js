@@ -128,5 +128,162 @@ window.CODELAB_ACTIVITIES={
       "solution": "class Model:\n    def __init__(self, name, version):\n        self.name = name\n        self.version = version\nm = Model(\"Tree\", 2)\nprint(m.version)",
       "check": "assert Model(\"Forest\", 3).version == 3, \"Store version on self.\""
     }
+  ],
+  "7": [
+    {
+      "kind": "python",
+      "title": "Catch ValueError",
+      "note": "Catch the expected exception rather than hiding all errors.",
+      "example": "try:\n    int(\"bad\")\nexcept ValueError:\n    print(\"Invalid\")",
+      "output": "Invalid",
+      "challenge": "Write parse(text) returning the integer or None on ValueError.",
+      "starter": "def parse(text):\n    pass\nprint(parse(\"bad\"))",
+      "solution": "def parse(text):\n    try:\n        return int(text)\n    except ValueError:\n        return None\nprint(parse(\"bad\"))",
+      "check": "assert parse(\"7\") == 7 and parse(\"bad\") is None, \"Catch ValueError and return None.\""
+    },
+    {
+      "kind": "python",
+      "title": "finally runs cleanup",
+      "note": "A finally block runs whether the conversion worked or not.",
+      "example": "try:\n    int(\"5\")\nfinally:\n    print(\"Finished\")",
+      "output": "Finished",
+      "challenge": "Add finally to print Finished after the invalid conversion.",
+      "starter": "try:\n    int(\"bad\")\nexcept ValueError:\n    print(\"Fallback\")\n# finally needed",
+      "solution": "try:\n    int(\"bad\")\nexcept ValueError:\n    print(\"Fallback\")\nfinally:\n    print(\"Finished\")",
+      "check": "assert __output__.splitlines()[-1] == \"Finished\", \"Print Finished in finally.\""
+    }
+  ],
+  "8": [
+    {
+      "kind": "python",
+      "title": "Inspect data types",
+      "note": "Python has int, float, complex, str and bool; type() inspects a value.",
+      "example": "print(type(10).__name__)\nprint(type(3.5).__name__)\nprint(type(\"ML\").__name__)\nprint(type(True).__name__)",
+      "output": "int\nfloat\nstr\nbool",
+      "challenge": "Create a complex number sample = 2 + 3j.",
+      "starter": "sample = None\nprint(type(sample).__name__)",
+      "solution": "sample = 2 + 3j\nprint(type(sample).__name__)",
+      "check": "assert isinstance(sample, complex), \"Use a complex number with j.\""
+    },
+    {
+      "kind": "python",
+      "title": "Boolean truthiness",
+      "note": "An empty string is falsey; even the string 'False' is truthy.",
+      "example": "print(bool(\"\"))\nprint(bool(\"False\"))\nprint(bool(0))",
+      "output": "False\nTrue\nFalse",
+      "challenge": "Set is_valid to bool('') and inspect it.",
+      "starter": "is_valid = True\nprint(is_valid)",
+      "solution": "is_valid = bool(\"\")\nprint(is_valid)",
+      "check": "assert is_valid is False, \"An empty string is falsey.\""
+    }
+  ],
+  "9": [
+    {
+      "kind": "python",
+      "title": "Index and slice lists",
+      "note": "Index 0 is first; -1 last; the stop index in a slice is excluded.",
+      "example": "values = [10, 20, 30, 40]\nprint(values[0])\nprint(values[-1])\nprint(values[1:3])",
+      "output": "10\n40\n[20, 30]",
+      "challenge": "Set middle to elements at indices 1 and 2.",
+      "starter": "values = [5, 10, 15, 20]\nmiddle = []\nprint(middle)",
+      "solution": "values = [5, 10, 15, 20]\nmiddle = values[1:3]\nprint(middle)",
+      "check": "assert middle == [10, 15], \"Use values[1:3].\""
+    },
+    {
+      "kind": "python",
+      "title": "Append, insert, remove",
+      "note": "These methods change the original list.",
+      "example": "items = [1, 3]\nitems.insert(1, 2)\nitems.append(4)\nprint(items)",
+      "output": "[1, 2, 3, 4]",
+      "challenge": "Append 4 to values, then remove 2.",
+      "starter": "values = [1, 2, 3]\n# Change values\nprint(values)",
+      "solution": "values = [1, 2, 3]\nvalues.append(4)\nvalues.remove(2)\nprint(values)",
+      "check": "assert values == [1, 3, 4], \"Use append and remove.\""
+    }
+  ],
+  "10": [
+    {
+      "kind": "python",
+      "title": "Tuple creation and unpacking",
+      "note": "Unpack fixed-size tuples into separate variable names.",
+      "example": "shape = (128, 64)\nrows, columns = shape\nprint(rows, columns)",
+      "output": "128 64",
+      "challenge": "Create a single-item tuple containing 5.",
+      "starter": "single = (5)\nprint(type(single).__name__)",
+      "solution": "single = (5,)\nprint(type(single).__name__)",
+      "check": "assert single == (5,), \"Use the trailing comma (5,).\""
+    }
+  ],
+  "11": [
+    {
+      "kind": "python",
+      "title": "Safe dictionary lookup",
+      "note": "dictionary.get(key, default) handles optional keys.",
+      "example": "cfg = {\"epochs\": 10}\nprint(cfg[\"epochs\"])\nprint(cfg.get(\"batch_size\", 32))",
+      "output": "10\n32",
+      "challenge": "Read learning_rate with fallback 0.01.",
+      "starter": "config = {\"epochs\": 20}\nlearning_rate = None\nprint(learning_rate)",
+      "solution": "config = {\"epochs\": 20}\nlearning_rate = config.get(\"learning_rate\", 0.01)\nprint(learning_rate)",
+      "check": "assert learning_rate == 0.01, \"Use get() with a default.\""
+    },
+    {
+      "kind": "python",
+      "title": "Update dictionary entries",
+      "note": "Assign a key to update its value; .items() yields key and value pairs.",
+      "example": "cfg = {\"epochs\": 10}\ncfg[\"epochs\"] = 15\nfor k, v in cfg.items():\n    print(k, v)",
+      "output": "epochs 15",
+      "challenge": "Change epochs to 25 and add batch_size 32.",
+      "starter": "config = {\"epochs\": 10}\n# Update it\nprint(config)",
+      "solution": "config = {\"epochs\": 25, \"batch_size\": 32}\nprint(config)",
+      "check": "assert config[\"epochs\"] == 25 and config[\"batch_size\"] == 32, \"Update both keys.\""
+    }
+  ],
+  "12": [
+    {
+      "kind": "python",
+      "title": "Remove duplicate values",
+      "note": "set() creates an unordered collection of unique values.",
+      "example": "labels = [\"cat\", \"cat\", \"dog\"]\nprint(len(set(labels)))",
+      "output": "2",
+      "challenge": "Create distinct from numbers.",
+      "starter": "numbers = [1, 1, 2, 2, 3]\ndistinct = None\nprint(len(distinct))",
+      "solution": "numbers = [1, 1, 2, 2, 3]\ndistinct = set(numbers)\nprint(len(distinct))",
+      "check": "assert distinct == {1, 2, 3}, \"Convert to a set.\""
+    },
+    {
+      "kind": "python",
+      "title": "Union, intersection, difference",
+      "note": "Use |, & and - to compare two sets.",
+      "example": "a = {1, 2, 3}\nb = {3, 4}\nprint(sorted(a | b))\nprint(sorted(a & b))",
+      "output": "[1, 2, 3, 4]\n[3]",
+      "challenge": "Store the shared items of a and b in common.",
+      "starter": "a = {1, 2, 3}\nb = {3, 4}\ncommon = set()\nprint(common)",
+      "solution": "a = {1, 2, 3}\nb = {3, 4}\ncommon = a & b\nprint(common)",
+      "check": "assert common == {3}, \"Use intersection &.\""
+    }
+  ],
+  "13": [
+    {
+      "kind": "python",
+      "title": "Aliasing vs copying",
+      "note": "alias = original points to the same mutable list.",
+      "example": "original = [1, 2]\nalias = original\nalias.append(3)\nprint(original)",
+      "output": "[1, 2, 3]",
+      "challenge": "Create alias for numbers and append 4 to the shared list.",
+      "starter": "numbers = [1, 2, 3]\nalias = None\nprint(numbers)",
+      "solution": "numbers = [1, 2, 3]\nalias = numbers\nalias.append(4)\nprint(numbers)",
+      "check": "assert alias is numbers and numbers == [1, 2, 3, 4], \"Share and mutate one list.\""
+    },
+    {
+      "kind": "python",
+      "title": "Local scope",
+      "note": "A local variable belongs inside a function. Return values instead of changing global state.",
+      "example": "value = 10\ndef double(x):\n    local_result = x * 2\n    return local_result\nprint(double(value))\nprint(value)",
+      "output": "20\n10",
+      "challenge": "Define triple(x) without modifying global value.",
+      "starter": "value = 5\ndef triple(x):\n    pass\nprint(triple(value))",
+      "solution": "value = 5\ndef triple(x):\n    return 3 * x\nprint(triple(value))",
+      "check": "assert triple(5) == 15 and value == 5, \"Return without changing global state.\""
+    }
   ]
 };
