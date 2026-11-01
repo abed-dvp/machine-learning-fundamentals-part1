@@ -630,7 +630,7 @@ print(classify(0.9))             # positive
 
 ## 🧪 Interactive Practice
 
-The **[browser Codelab](https://abed-dvp.github.io/machine-learning-fundamentals-part1/codelab/)** includes all 18 steps, editable Python exercises, **Run Python**, **Check answer**, solutions, and local progress tracking. The first run downloads the Python runtime, so it requires an internet connection.
+The **[browser Codelab](https://abed-dvp.github.io/machine-learning-fundamentals-part1/codelab/)** includes all 18 steps, examples and an editable **Try it** exercise immediately under each concept, **Run Python**, **Check answer**, solutions, and per-activity progress tracking. Terminal commands are explicitly labeled and checked for syntax, not executed in the browser. The first run downloads the Python runtime, so it requires an internet connection.
 
 For each lesson, read the example, predict the output, then solve the corresponding exercise without looking at the solution.
 
