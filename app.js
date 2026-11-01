@@ -1,85 +1,534 @@
-(() => {
-  const $ = id => document.getElementById(id);
-  const safe = (fn, fallback) => {try {return fn()} catch{return fallback}};
-  const completed = new Set(safe(() => JSON.parse(localStorage.getItem('mlf-completed') || '[]'), []));
-  let index = -1, pyodide = null, initializing = null;
-  const STORE = 'mlf-completed';
-  const persist = () => safe(() => localStorage.setItem(STORE, JSON.stringify([...completed])));
-  const theme = safe(() => localStorage.getItem('mlf-theme'), 'light') || 'light';
-  document.documentElement.dataset.theme=theme;
-  $('theme').onclick = () => {const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';document.documentElement.dataset.theme = next;safe(() => localStorage.setItem('mlf-theme',next));};
-  $('menu').onclick = () => $('sidebar').classList.toggle('open');
-  $('resetProgress').onclick = () => {if(confirm('Reset all lesson completion marks?')) {completed.clear();persist();refresh();}};
-  $('start').onclick=()=>show(0);
-  function refresh(){
-    const nav=$('lesson-nav'); nav.replaceChildren();
-    LESSONS.forEach((l,i)=> {
-      if(i === 0 || LESSONS[i-1].unit!==l.unit){
-        const h=document.createElement('div');h.className='module-head';h.textContent=`${String(l.unit).padStart(2,'0')} · ${MODULES[l.unit-1].title}`;nav.appendChild(h);
-      }
-      const b=document.createElement('button');b.className='nav-link'+(i===index?' active':'');b.setAttribute('aria-current',i===index?'step':'false');
-      const number=document.createElement('span');number.className='nav-num';number.textContent=String(i+1).padStart(2,'0');
-      const name=document.createElement('span');name.textContent=l.title;
-      const check=document.createElement('span');check.className='nav-check';check.textContent=completed.has(i)?'✓':'';
-      b.append(number,name,check); b.onclick=()=>show(i);nav.appendChild(b);
+'use strict';
+
+const steps = window.CODELAB_STEPS;
+// Source slide locations are stored per lesson.
+const storageKey = 'abed-codelab-mlf-part1-state-v2';
+const themeKey = 'abed-codelab-theme';
+
+let currentIndex = 0;
+let state = loadState();
+let pyodide = null;
+let pythonReady = false;
+
+const els = {
+  sidebar: document.getElementById('sidebar'),
+  menuButton: document.getElementById('menuButton'),
+  stepNav: document.getElementById('stepNav'),
+  progressBar: document.getElementById('progressBar'),
+  progressText: document.getElementById('progressText'),
+  stepNumber: document.getElementById('stepNumber'),
+  videoTime: document.getElementById('videoTime'),
+  lessonTitle: document.getElementById('lessonTitle'),
+  lessonIntro: document.getElementById('lessonIntro'),
+  learnBullets: document.getElementById('learnBullets'),
+  exampleCode: document.getElementById('exampleCode'),
+  expectedOutput: document.getElementById('expectedOutput'),
+  challengeText: document.getElementById('challengeText'),
+  starterCode: document.getElementById('starterCode'),
+  solutionPanel: document.getElementById('solutionPanel'),
+  solutionCode: document.getElementById('solutionCode'),
+  solutionButton: document.getElementById('solutionButton'),
+  resetCode: document.getElementById('resetCode'),
+  runPython: document.getElementById('runPython'),
+  checkAnswer: document.getElementById('checkAnswer'),
+  clearOutput: document.getElementById('clearOutput'),
+  runOutput: document.getElementById('runOutput'),
+  executionState: document.getElementById('executionState'),
+  checkFeedback: document.getElementById('checkFeedback'),
+  runtimeStatus: document.getElementById('runtimeStatus'),
+  runtimeDot: document.getElementById('runtimeDot'),
+  runtimeText: document.getElementById('runtimeText'),
+  prevButton: document.getElementById('prevButton'),
+  nextButton: document.getElementById('nextButton'),
+  completeButton: document.getElementById('completeButton'),
+  resetProgress: document.getElementById('resetProgress'),
+  themeButton: document.getElementById('themeButton')
+};
+
+const PYTHON_HELPER = `
+import ast
+import contextlib
+import io
+import json
+import traceback
+
+def __abed_run(code, test_code=""):
+    namespace = {"__name__": "__main__"}
+    stdout = io.StringIO()
+    error_type = None
+    error_text = ""
+    test_error = ""
+
+    try:
+        tree = ast.parse(code, filename="<learner>", mode="exec")
+
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stdout):
+            if tree.body and isinstance(tree.body[-1], ast.Expr):
+                last_expr = tree.body.pop()
+
+                if tree.body:
+                    exec(compile(tree, "<learner>", "exec"), namespace)
+
+                value = eval(
+                    compile(ast.Expression(last_expr.value), "<learner>", "eval"),
+                    namespace,
+                )
+
+                if value is not None:
+                    print(repr(value))
+            else:
+                exec(compile(tree, "<learner>", "exec"), namespace)
+
+    except BaseException as exc:
+        error_type = type(exc).__name__
+        error_text = "".join(
+            traceback.format_exception_only(type(exc), exc)
+        ).strip()
+
+    namespace["__output__"] = stdout.getvalue()
+
+    if test_code and error_type is None:
+        try:
+            exec(compile(test_code, "<checks>", "exec"), namespace)
+        except BaseException as exc:
+            test_error = "".join(
+                traceback.format_exception_only(type(exc), exc)
+            ).strip()
+
+    return {
+        "output": stdout.getvalue(),
+        "error_type": error_type,
+        "error": error_text,
+        "test_error": test_error,
+    }
+`;
+
+async function initPythonRuntime() {
+  if (pythonReady && pyodide) return pyodide;
+  try {
+    els.runtimeText.textContent = 'Loading Python engine (first run needs internet)…';
+    els.executionState.textContent = 'Loading Python…';
+    if (typeof window.loadPyodide !== 'function') {
+      await new Promise(function(resolve, reject) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js';
+        script.onload = resolve;
+        script.onerror = function() { reject(new Error('Could not download Pyodide. Check your internet connection.')); };
+        document.head.appendChild(script);
+      });
+    }
+    pyodide = await window.loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/'});
+    pyodide.runPython(PYTHON_HELPER);
+    const version = pyodide.runPython('import sys; sys.version.split()[0]');
+    pythonReady = true;
+    els.runtimeDot.className = 'runtime-dot ready';
+    els.runtimeText.textContent = 'Python ' + String(version) + ' ready in browser';
+    return pyodide;
+  } catch(error) {
+    pythonReady = false;
+    els.runtimeDot.className = 'runtime-dot error';
+    const message = error && error.message ? error.message : String(error);
+    els.runtimeText.textContent = 'Python unavailable — ' + message;
+    els.executionState.textContent = 'Runtime error';
+    throw error;
+  }
+}
+
+async function executePython(code, testCode) {
+  if (!pythonReady || !pyodide) await initPythonRuntime();
+  els.runtimeText.textContent = 'Loading required Python packages / running…';
+  await pyodide.loadPackagesFromImports(code);
+  pyodide.globals.set('__abed_user_code', code);
+  pyodide.globals.set('__abed_test_code', testCode || '');
+  try {
+    const result = await pyodide.runPythonAsync('json.dumps(__abed_run(__abed_user_code, __abed_test_code))');
+    els.runtimeText.textContent = 'Python ready in browser';
+    return JSON.parse(String(result));
+  } finally {
+    try { pyodide.globals.delete('__abed_user_code'); pyodide.globals.delete('__abed_test_code'); } catch {}
+  }
+}
+
+function setRunning(isRunning, label) {
+  els.runPython.disabled = isRunning;
+  els.checkAnswer.disabled = isRunning || !Boolean(steps[currentIndex].check);
+  els.executionState.textContent = label || (isRunning ? 'Running…' : 'Ready');
+}
+
+function formatExecution(result) {
+  const parts = [];
+  if (result.output) parts.push(result.output.replace(/\s+$/, ''));
+  if (result.error) parts.push(result.error);
+  return parts.join('\n') || '(no output)';
+}
+
+function clearFeedback() {
+  els.checkFeedback.hidden = true;
+  els.checkFeedback.className = 'check-feedback';
+  els.checkFeedback.textContent = '';
+}
+
+function loadState() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    return {
+      completed: parsed.completed || {},
+      code: parsed.code || {}
+    };
+  } catch {
+    return { completed: {}, code: {} };
+  }
+}
+
+function saveState() {
+  localStorage.setItem(storageKey, JSON.stringify(state));
+}
+
+function secondsFromTimestamp(value) {
+  const parts = value.split(':').map(Number);
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  return parts[0] * 3600 + parts[1] * 60 + parts[2];
+}
+
+function renderNav() {
+  els.stepNav.innerHTML = '';
+
+  steps.forEach(function(step, index) {
+    if (index === 0 || steps[index - 1].unit !== step.unit) {
+      const heading = document.createElement('div');
+      heading.className = 'module-divider';
+      heading.textContent = 'Module ' + step.unit + ' · ' + window.MODULES[step.unit - 1].title;
+      els.stepNav.appendChild(heading);
+    }
+    const button = document.createElement('button');
+    button.className = 'step-link';
+
+    if (index === currentIndex) button.classList.add('active');
+    if (state.completed[step.id]) button.classList.add('complete');
+
+    const marker = state.completed[step.id] ? '✓' : String(step.id);
+
+    button.innerHTML =
+      '<span class="step-index">' + marker + '</span>' +
+      '<span class="step-title">' + escapeHtml(step.title) + '</span>' +
+      '<span class="step-time">' + escapeHtml(step.time) + '</span>';
+
+    button.addEventListener('click', function() {
+      saveCurrentCode();
+      currentIndex = index;
+      render();
+      els.sidebar.classList.remove('open');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
-    $('counter').textContent=`${completed.size} / ${LESSONS.length} completed`;
-    $('meter').style.width=`${completed.size/LESSONS.length*100}%`;
-    if(index>=0){$('done').textContent=completed.has(index)?'Completed ✓':'Mark complete ✓';$('done').classList.toggle('completed',completed.has(index));}
+
+    els.stepNav.appendChild(button);
+  });
+}
+
+function renderLesson() {
+  const step = steps[currentIndex];
+
+  els.stepNumber.textContent = 'Step ' + step.id + ' of ' + steps.length;
+  els.videoTime.textContent = 'Source: ' + step.slides + ' · ' + step.time;
+  els.videoTime.href = './LESSONS.md';
+  els.lessonTitle.textContent = step.title;
+  els.lessonIntro.textContent = step.learn;
+
+  els.learnBullets.innerHTML = '';
+  step.bullets.forEach(function(item) {
+    const li = document.createElement('li');
+    li.textContent = item;
+    els.learnBullets.appendChild(li);
+  });
+
+  const walkthrough = document.getElementById('walkthroughBullets');
+  walkthrough.replaceChildren();
+  step.walkthrough.forEach(function(line) {
+    const li = document.createElement('li'); li.textContent = line; walkthrough.appendChild(li);
+  });
+  renderQuiz(step);
+  els.checkAnswer.hidden = !Boolean(step.check);
+  els.checkAnswer.disabled = !Boolean(step.check);
+  els.exampleCode.textContent = step.example;
+  els.expectedOutput.textContent = step.output;
+  els.challengeText.textContent = step.challenge;
+  els.solutionCode.textContent = step.solution;
+  document.getElementById('takeawayText').textContent = step.takeaway;
+
+  const saved = state.code[step.id];
+  els.starterCode.value = typeof saved === 'string' ? saved : step.starter;
+
+  els.solutionPanel.hidden = true;
+  els.solutionButton.textContent = 'Show solution';
+  clearFeedback();
+
+  els.runOutput.classList.remove('error-output');
+  els.runOutput.textContent = pythonReady
+    ? 'Run your Python code to see the output.'
+    : 'Click Run Python to load the browser runtime and execute your code.';
+  els.executionState.textContent = pythonReady ? 'Ready' : 'Ready to load Python';
+
+  els.prevButton.disabled = currentIndex === 0;
+  els.nextButton.disabled = currentIndex === steps.length - 1;
+
+  const done = Boolean(state.completed[step.id]);
+  els.completeButton.textContent = done ? 'Completed ✓' : 'Mark step complete';
+  els.completeButton.classList.toggle('completed', done);
+}
+
+function renderQuiz(step) {
+  const question = document.getElementById('quizQuestion');
+  const choices = document.getElementById('quizChoices');
+  const feedback = document.getElementById('quizFeedback');
+  question.textContent = step.quiz[0];
+  feedback.textContent = '';
+  feedback.className = 'quiz-feedback';
+  choices.replaceChildren();
+  [1, 2, 3].forEach(function(option) {
+    const button = document.createElement('button');
+    button.className = 'quiz-choice';
+    button.textContent = step.quiz[option];
+    button.addEventListener('click', function() {
+      const selected = option - 1;
+      const correct = step.quiz[4];
+      [...choices.children].forEach(function(choice, index) {
+        choice.disabled = true;
+        choice.classList.toggle('correct', index === correct);
+        choice.classList.toggle('wrong', index === selected && selected !== correct);
+      });
+      feedback.className = 'quiz-feedback ' + (selected === correct ? 'success' : 'failure');
+      feedback.textContent = (selected === correct ? 'Correct. ' : 'Not quite. ') + step.quiz[5];
+    });
+    choices.appendChild(button);
+  });
+}
+
+function renderProgress() {
+  const completed = steps.filter(function(step) {
+    return state.completed[step.id];
+  }).length;
+
+  const percent = Math.round((completed / steps.length) * 100);
+  els.progressBar.style.width = percent + '%';
+  els.progressText.textContent =
+    completed + ' of ' + steps.length + ' complete · ' + percent + '%';
+}
+
+function render() {
+  renderNav();
+  renderLesson();
+  renderProgress();
+}
+
+function saveCurrentCode() {
+  const step = steps[currentIndex];
+  state.code[step.id] = els.starterCode.value;
+  saveState();
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+els.starterCode.addEventListener('input', saveCurrentCode);
+
+els.runPython.addEventListener('click', async function() {
+  clearFeedback();
+  saveCurrentCode();
+  setRunning(true, 'Running…');
+  els.runOutput.classList.remove('error-output');
+  els.runOutput.textContent = 'Running Python…';
+
+  await new Promise(function(resolve) {
+    requestAnimationFrame(resolve);
+  });
+
+  try {
+    const result = await executePython(els.starterCode.value, '');
+    els.runOutput.textContent = formatExecution(result);
+    els.runOutput.classList.toggle('error-output', Boolean(result.error));
+    els.executionState.textContent = result.error ? 'Finished with error' : 'Finished';
+  } catch (error) {
+    els.runOutput.textContent = error.message || String(error);
+    els.runOutput.classList.add('error-output');
+    els.executionState.textContent = 'Run failed';
+  } finally {
+    setRunning(false);
   }
-  function fillList(id, arr, kind){const el=$(id);el.replaceChildren();arr.forEach(s=>{const li=document.createElement('li');li.textContent=s;el.appendChild(li);});}
-  function show(i){if(i<0||i>=LESSONS.length)return;
-    index=i;const l=LESSONS[i];$('hero').hidden=true;$('lesson').hidden=false;
-    $('step-id').textContent=`LESSON ${String(i+1).padStart(2,'0')} / ${LESSONS.length}`;
-    $('source').textContent=`Source: ${l.slides}`;$('duration').textContent=`≈ ${l.minutes} min`;
-    $('title').textContent=l.title;$('summary').textContent=l.summary;
-    fillList('ideas',l.ideas);fillList('walkthrough',l.walkthrough);
-    $('engineering').textContent=l.engineering;
-    $('code').value=l.code;$('expected').textContent=l.expected;
-    $('challenge').textContent=l.challenge;$('hint').textContent=l.hint;$('solution').textContent=l.solution;
-    $('output').textContent='Run the example to see output here.';
-    $('question').textContent=l.quiz[0];$('feedback').textContent='';
-    const choices=$('choices');choices.replaceChildren();
-    for(let j=1;j<=3;j++){const b=document.createElement('button');b.className='choice';b.textContent=l.quiz[j];b.onclick=()=>{
-      const correct=l.quiz[4]===j-1;choices.querySelectorAll('.choice').forEach((x,k)=>{
-        x.disabled=true;x.classList.toggle('correct',k===l.quiz[4]);x.classList.toggle('wrong',k===j-1&&!correct);
-      });$('feedback').textContent=(correct?'Correct. ':'Not quite. ')+l.quiz[5];
-    };choices.appendChild(b);}
-    $('prev').disabled=i===0;$('next').textContent=i===LESSONS.length-1?'Back to start ↺':'Next →';
-    $('done').onclick=()=>{if(completed.has(index))completed.delete(index);else completed.add(index);persist();refresh();};
-    $('prev').onclick=()=>show(i-1);$('next').onclick=()=>show(i===LESSONS.length-1?0:i+1);
-    history.replaceState(null,'','#lesson-'+(i+1));refresh();$('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'instant'});
+});
+
+els.checkAnswer.addEventListener('click', async function() {
+  const step = steps[currentIndex];
+
+  clearFeedback();
+  saveCurrentCode();
+  setRunning(true, 'Checking…');
+  els.runOutput.classList.remove('error-output');
+  els.runOutput.textContent = 'Running Python and checking your answer…';
+
+  await new Promise(function(resolve) {
+    requestAnimationFrame(resolve);
+  });
+
+  try {
+    const result = await executePython(els.starterCode.value, step.check || '');
+    els.runOutput.textContent = formatExecution(result);
+    els.runOutput.classList.toggle('error-output', Boolean(result.error));
+
+    let passed = false;
+    let feedback = '';
+
+    if (step.expectedError) {
+      passed = result.error_type === step.expectedError;
+      feedback = passed
+        ? 'Correct — your code raised ' + step.expectedError + '.'
+        : 'Not yet — expected ' + step.expectedError + ', but got ' +
+          (result.error_type || 'no error') + '.';
+    } else if (result.error) {
+      feedback =
+        'Your code raised ' + result.error_type + '. Fix the error and try again.';
+    } else if (result.test_error) {
+      feedback =
+        result.test_error.replace(/^AssertionError:\s*/, '') ||
+        'The result does not pass the exercise checks yet.';
+    } else if (step.check) {
+      passed = true;
+      feedback = 'Correct — your code passes the checks.';
+    } else {
+      passed = true;
+      feedback = 'Code ran successfully.';
+    }
+
+    els.checkFeedback.hidden = false;
+    els.checkFeedback.className =
+      'check-feedback ' + (passed ? 'success' : 'failure');
+    els.checkFeedback.textContent = feedback;
+    els.executionState.textContent = passed ? 'Check passed' : 'Check failed';
+
+    if (passed) {
+      state.completed[step.id] = true;
+      saveState();
+      renderNav();
+      renderProgress();
+      els.completeButton.textContent = 'Completed ✓';
+      els.completeButton.classList.add('completed');
+    }
+  } catch (error) {
+    els.runOutput.textContent = error.message || String(error);
+    els.runOutput.classList.add('error-output');
+    els.executionState.textContent = 'Check failed';
+  } finally {
+    setRunning(false);
   }
-  $('copy').onclick=()=>{const v=$('code').value;if(navigator.clipboard){navigator.clipboard.writeText(v).then(()=>{ $('copy').textContent='Copied ✓';setTimeout(()=>{$('copy').textContent='Copy';},1000);}).catch(()=>{});}else{ $('code').select();document.execCommand('copy');}};
-  $('reset').onclick=()=>{if(index>=0)$('code').value=LESSONS[index].code;};
-  async function initPython(){
-    if(pyodide) return pyodide;
-    if(initializing)return initializing;
-    initializing=(async()=>{
-      $('runtime-status').textContent='Loading Python (~first run only)…';
-      const script=document.createElement('script');
-      script.src='https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js';
-      await new Promise((resolve,reject)=>{script.onload=resolve;script.onerror=()=>reject(new Error('Could not fetch Pyodide. Internet access is needed.'));document.head.appendChild(script);});
-      pyodide=await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/'});
-      $('runtime-status').textContent='Python ready · runs locally in your browser';
-      return pyodide;
-    })();
-    try{return await initializing;}catch(e){initializing=null;$('runtime-status').textContent='Runtime unavailable · see README for local Python setup';throw e;}
-  }
-  $('run').onclick=async()=>{
-    const button=$('run');button.disabled=true;
-    let logs=[]; $('output').textContent='Starting Python…';
-    try{
-      const py=await initPython();const code=$('code').value;
-      $('runtime-status').textContent='Checking packages / running…';
-      await py.loadPackagesFromImports(code);
-      py.setStdout({batched:s=>logs.push(s)});py.setStderr({batched:s=>logs.push(s)});
-      let result=await py.runPythonAsync(code);
-      if(result!==undefined&&result!==null&&!(logs.length))logs.push(String(result));
-      $('output').textContent=logs.join('\n')||'Execution completed (no printed output).';
-      $('runtime-status').textContent='Python ready · runs locally in your browser';
-    }catch(e){$('output').textContent=(logs.length?logs.join('\n')+'\n':'')+String(e);}
-    finally{button.disabled=false;}
-  };
-  refresh(); const match=location.hash.match(/^#lesson-(\d+)$/);if(match)show(Math.max(0,Math.min(LESSONS.length-1,Number(match[1])-1)));
-})();
+});
+
+els.clearOutput.addEventListener('click', function() {
+  clearFeedback();
+  els.runOutput.classList.remove('error-output');
+  els.runOutput.textContent = pythonReady
+    ? 'Output cleared. Run your code again.'
+    : 'Click Run Python to load the browser runtime.';
+  els.executionState.textContent = pythonReady ? 'Ready' : 'Ready to load Python';
+});
+
+els.resetCode.addEventListener('click', function() {
+  const step = steps[currentIndex];
+  els.starterCode.value = step.starter;
+  state.code[step.id] = step.starter;
+  saveState();
+});
+
+els.solutionButton.addEventListener('click', function() {
+  const opening = els.solutionPanel.hidden;
+  els.solutionPanel.hidden = !opening;
+  els.solutionButton.textContent = opening ? 'Hide solution' : 'Show solution';
+});
+
+els.prevButton.addEventListener('click', function() {
+  if (currentIndex === 0) return;
+  saveCurrentCode();
+  currentIndex -= 1;
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+els.nextButton.addEventListener('click', function() {
+  if (currentIndex >= steps.length - 1) return;
+  saveCurrentCode();
+  currentIndex += 1;
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+els.completeButton.addEventListener('click', function() {
+  const step = steps[currentIndex];
+  state.completed[step.id] = !state.completed[step.id];
+  saveState();
+  render();
+});
+
+els.resetProgress.addEventListener('click', function() {
+  const confirmed = window.confirm(
+    'Reset completion progress and practice code for all 15 lessons?'
+  );
+
+  if (!confirmed) return;
+
+  state = { completed: {}, code: {} };
+  saveState();
+  render();
+});
+
+els.menuButton.addEventListener('click', function() {
+  els.sidebar.classList.toggle('open');
+});
+
+document.addEventListener('click', function(event) {
+  const copy = event.target.closest('[data-copy]');
+  if (!copy) return;
+
+  const target = document.getElementById(copy.getAttribute('data-copy'));
+  if (!target) return;
+
+  navigator.clipboard.writeText(target.textContent).then(function() {
+    const original = copy.textContent;
+    copy.textContent = 'Copied';
+
+    setTimeout(function() {
+      copy.textContent = original;
+    }, 900);
+  });
+});
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem(themeKey, theme);
+}
+
+const savedTheme = localStorage.getItem(themeKey);
+
+if (savedTheme) {
+  applyTheme(savedTheme);
+} else if (
+  window.matchMedia &&
+  window.matchMedia('(prefers-color-scheme: dark)').matches
+) {
+  applyTheme('dark');
+}
+
+els.themeButton.addEventListener('click', function() {
+  const current =
+    document.documentElement.getAttribute('data-theme') || 'light';
+
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+});
+
+render();
+els.runtimeText.textContent = 'Python loads on first run · internet required';
+els.runPython.disabled = false;
+els.checkAnswer.disabled = !Boolean(steps[currentIndex].check);
