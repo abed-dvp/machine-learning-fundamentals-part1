@@ -163,7 +163,7 @@ window.CODELAB_STEPS=[
     "example": "try:\n    number = int('abc')\nexcept ValueError:\n    print('Invalid number')\nfinally:\n    print('Finished')",
     "output": "Invalid number\nFinished",
     "challenge": "Handle ValueError from int('bad') and always print 'Done' using finally.",
-    "starter": "try:\n    number = int('bad')\n# Complete except and finally",
+    "starter": "try:\n    number = int('bad')\nexcept ValueError:\n    # Add your handling code here\n    pass\nfinally:\n    # Print Done here\n    pass",
     "solution": "try:\n    number = int('bad')\nexcept ValueError:\n    print('Invalid')\nfinally:\n    print('Done')",
     "takeaway": "",
     "check": "assert 'Done' in __output__.splitlines(), 'Use finally to print Done.'\nassert 'Invalid' in __output__.splitlines(), 'Handle ValueError using except.'"
