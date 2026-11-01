@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="A practical, Python-first machine learning fundamentals Codelab based on six lecture decks.">
+<title>Machine Learning Fundamentals · Abed Codelab</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <button id="menu" class="icon-btn" aria-label="Toggle lesson navigation">☰</button>
+  <div class="brand"><div class="brand-mark">A</div><div><b>ABED CODELAB</b><small>Machine Learning Fundamentals</small></div></div>
+  <div class="top-actions"><a href="README.md" target="_blank">Reference</a><a href="PRACTICE.md" target="_blank">Practice</a><button id="theme" class="icon-btn" aria-label="Toggle theme">◐</button></div>
+</header>
+<div class="course-meter"><div id="meter"></div></div>
+<div class="layout">
+ <aside class="sidebar" id="sidebar">
+  <div class="sidebar-top"><div class="eyebrow">6 MODULES · 15 PYTHON LABS</div><h2>Your roadmap</h2><p id="counter">0 / 15 completed</p></div>
+  <nav id="lesson-nav" aria-label="Course lessons"></nav>
+  <div class="sidebar-bottom"><button id="resetProgress" class="subtle">Reset progress</button></div>
+ </aside>
+ <main class="main">
+  <div class="hero" id="hero"><div class="eyebrow">PYTHON-FIRST · ENGINEERING-FOCUSED</div><h1>Learn the essentials. Build the intuition. Run the code.</h1><p>Six lecture decks distilled into focused engineering lessons, practical Python examples, and short checks.</p><div class="hero-grid"><span><b>191</b><small>source slides</small></span><span><b>15</b><small>focused lessons</small></span><span><b>15</b><small>runnable Python examples</small></span></div><button id="start" class="primary">Start learning →</button></div>
+  <article class="lesson" id="lesson" hidden>
+   <div class="lesson-top"><span class="pill" id="step-id"></span><span id="source" class="source"></span><span id="duration" class="duration"></span></div>
+   <h1 id="title"></h1><p class="lead" id="summary"></p>
+   <section><div class="section-title"><span class="section-num">01</span><h2>Core concepts</h2></div><ul class="points" id="ideas"></ul><div class="engineer"><strong>Engineering takeaway</strong><p id="engineering"></p></div></section>
+   <section><div class="section-title"><span class="section-num">02</span><h2>Python, explained</h2></div><ol id="walkthrough" class="walkthrough"></ol>
+    <div class="code-head"><div><strong>Runnable example</strong><small>Editable · Python 3</small></div><div><button class="subtle" id="copy">Copy</button><button class="subtle" id="reset">Reset</button></div></div>
+    <textarea id="code" spellcheck="false" aria-label="Python practice editor"></textarea>
+    <div class="runbar"><button id="run" class="primary">▶ Run Python</button><span id="runtime-status" role="status">Runtime loads on first run · internet required</span></div>
+    <div class="terminal-head">OUTPUT</div><pre id="output" class="terminal" aria-live="polite">Run the example to see output here.</pre>
+    <details class="expected"><summary>Expected output</summary><pre id="expected"></pre></details>
+   </section>
+   <section><div class="section-title"><span class="section-num">03</span><h2>Try it</h2></div><p id="challenge"></p><details><summary>Hint</summary><p id="hint"></p></details><details><summary>One possible solution</summary><pre><code id="solution"></code></pre></details></section>
+   <section><div class="section-title"><span class="section-num">04</span><h2>Knowledge check</h2></div><p id="question" class="question"></p><div id="choices" class="choices"></div><p id="feedback" class="feedback" aria-live="polite"></p></section>
+   <div class="footer"><button id="prev" class="subtle">← Previous</button><button id="done" class="outline">Mark complete ✓</button><button id="next" class="primary">Next →</button></div>
+  </article>
+  <div class="last-note">Source: six supplied lecture slide decks · Explanations and exercises are newly written · Synthetic data in examples</div>
+ </main>
+</div>
+<script src="lessons.js"></script><script src="app.js"></script>
+</body></html>
