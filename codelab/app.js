@@ -244,7 +244,7 @@ function renderLesson() {
   els.expectedOutput.textContent = step.output;
   els.challengeText.textContent = step.challenge;
   els.solutionCode.textContent = step.solution;
-  document.getElementById('takeawayText').textContent = step.takeaway;
+  // Lessons stay focused on the slide topic; no separate takeaway card.
 
   const saved = state.code[step.id];
   els.starterCode.value = typeof saved === 'string' ? saved : step.starter;
