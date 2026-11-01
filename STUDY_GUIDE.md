@@ -35,4 +35,4 @@ Each step stores a short Python assertion test. Click **Check answer** to execut
 
 ## AI engineering additions
 
-The source slides focus on Python syntax. To align with your goal, some newly authored examples use model names, thresholds, configuration dictionaries, feature types and reproducibility. They are identified as **Engineering connection (added)**; they are not attributed to the slides.
+The source slides focus on Python syntax. Additional practical examples show how these topics apply to model configurations, thresholds, feature types and reproducible experimentation. These examples are supplementary material.
