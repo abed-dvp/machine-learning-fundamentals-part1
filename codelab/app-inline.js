@@ -91,7 +91,8 @@ const els = {
   next: document.getElementById('nextButton'),
   completion: document.getElementById('completeButton'),
   reset: document.getElementById('resetProgress'),
-  runtime: document.getElementById('runtimeText')
+  runtime: document.getElementById('runtimeText'),
+  takeaway: document.getElementById('takeawayText')
 };
 function element(tag, className, textValue) {
   const result = document.createElement(tag);
@@ -304,6 +305,7 @@ function renderLesson(){
   els.videoTime.textContent=step.slides+' · '+step.time;
   els.lessonTitle.textContent=step.title;
   els.lessonIntro.textContent=step.learn;
+  els.takeaway.textContent=step.takeaway;
   els.activityList.replaceChildren();
   allActivities(step).forEach((activity,index)=>{
     const card=append(els.activityList,'article','concept-card');
