@@ -1,4 +1,4 @@
-name: Deploy Machine Learning Codelab to GitHub Pages
+name: Publish Machine Learning Codelab
 
 on:
   push:
@@ -7,38 +7,27 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: pages
+  group: gh-pages-publish
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  publish:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Checkout main
+        uses: actions/checkout@v4
 
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Build Codelab and bundle Python runtime
+      - name: Build site and bundle the Python runtime
         shell: bash
         run: |
           set -euo pipefail
-
           mkdir -p _site/codelab/vendor/pyodide
           cp index.html .nojekyll _site/
           cp -R codelab/. _site/codelab/
 
-          # Keep Python runtime on the same GitHub Pages origin, as in the working Python Codelab.
           PYODIDE_BASE="https://cdn.jsdelivr.net/pyodide/v314.0.7/full"
           files=(
             "pyodide.js"
@@ -48,25 +37,31 @@ jobs:
             "pyodide-lock.json"
             "python_stdlib.zip"
           )
-
           for file in "${files[@]}"; do
-            echo "Bundling ${file} ..."
+            echo "Bundling: ${file}"
             curl --fail --location --retry 3 --retry-delay 3 \
               "${PYODIDE_BASE}/${file}" \
               --output "_site/codelab/vendor/pyodide/${file}"
+            test -s "_site/codelab/vendor/pyodide/${file}"
           done
 
-          test -s _site/codelab/vendor/pyodide/pyodide.js
-          test -s _site/codelab/vendor/pyodide/pyodide.asm.wasm
-          test -s _site/codelab/vendor/pyodide/python_stdlib.zip
-          echo "Static site ready:"
-          ls -lh _site/codelab/vendor/pyodide/
+          test -f _site/index.html
+          test -f _site/codelab/index.html
+          test -f _site/codelab/app.js
+          test -f _site/codelab/steps.js
+          echo "Website and local Python runtime prepared."
 
-      - name: Upload static site
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: _site
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish to gh-pages branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cd _site
+          git init -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Publish Codelab from ${GITHUB_SHA}"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --force origin HEAD:gh-pages
