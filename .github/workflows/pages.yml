@@ -1,8 +1,9 @@
-name: Deploy Machine Learning Codelab
+name: Deploy Machine Learning Codelab to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -11,33 +12,61 @@ permissions:
   id-token: write
 
 concurrency:
-  group: github-pages
+  group: pages
   cancel-in-progress: true
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Configure Pages
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-      - name: Prepare static website
+
+      - name: Build Codelab and bundle Python runtime
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p _site
+
+          mkdir -p _site/codelab/vendor/pyodide
           cp index.html .nojekyll _site/
-          cp -R codelab _site/
-          echo 'Files prepared for GitHub Pages:'
-          find _site -maxdepth 3 -type f | sort
-      - name: Upload Pages artifact
+          cp -R codelab/. _site/codelab/
+
+          # Keep Python runtime on the same GitHub Pages origin, as in the working Python Codelab.
+          PYODIDE_BASE="https://cdn.jsdelivr.net/pyodide/v314.0.7/full"
+          files=(
+            "pyodide.js"
+            "pyodide.mjs"
+            "pyodide.asm.mjs"
+            "pyodide.asm.wasm"
+            "pyodide-lock.json"
+            "python_stdlib.zip"
+          )
+
+          for file in "${files[@]}"; do
+            echo "Bundling ${file} ..."
+            curl --fail --location --retry 3 --retry-delay 3 \
+              "${PYODIDE_BASE}/${file}" \
+              --output "_site/codelab/vendor/pyodide/${file}"
+          done
+
+          test -s _site/codelab/vendor/pyodide/pyodide.js
+          test -s _site/codelab/vendor/pyodide/pyodide.asm.wasm
+          test -s _site/codelab/vendor/pyodide/python_stdlib.zip
+          echo "Static site ready:"
+          ls -lh _site/codelab/vendor/pyodide/
+
+      - name: Upload static site
         uses: actions/upload-pages-artifact@v4
         with:
           path: _site
-      - name: Deploy
+
+      - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

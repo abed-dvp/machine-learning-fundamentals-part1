@@ -111,13 +111,14 @@ async function initPythonRuntime() {
     if (typeof window.loadPyodide !== 'function') {
       await new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js';
+        script.src = './vendor/pyodide/pyodide.js';
         script.onload = resolve;
-        script.onerror = () => reject(new Error('Could not load Pyodide from CDN; check your connection.'));
+        script.onerror = () => reject(new Error('Pyodide runtime file was not published. Check the Pages deployment and /codelab/vendor/pyodide/ directory.'));
         document.head.appendChild(script);
       });
     }
-    pyodide = await window.loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/'});
+    pyodide = await window.loadPyodide({indexURL:'./vendor/pyodide/'});
+    pyodide.setStdin({ error: true });
     pyodide.runPython(PYTHON_HELPER);
     const version = pyodide.runPython('import sys; sys.version.split()[0]');
     pythonReady = true;
