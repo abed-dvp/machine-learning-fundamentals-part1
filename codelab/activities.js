@@ -285,5 +285,70 @@ window.CODELAB_ACTIVITIES={
       "solution": "value = 5\ndef triple(x):\n    return 3 * x\nprint(triple(value))",
       "check": "assert triple(5) == 15 and value == 5, \"Return without changing global state.\""
     }
+  ],
+  "14": [
+    {
+      "kind": "python",
+      "title": "Comparisons and boundaries",
+      "note": "== checks equality, != checks inequality; >= and <= include boundaries.",
+      "example": "print(3 == 3)\nprint(3 != 4)\nprint(4 >= 4)\nprint(2 < 1)",
+      "output": "True\nTrue\nTrue\nFalse",
+      "challenge": "Set within_limit to True when 10 <= limit.",
+      "starter": "limit = 10\nwithin_limit = False\nprint(within_limit)",
+      "solution": "limit = 10\nwithin_limit = 10 <= limit\nprint(within_limit)",
+      "check": "assert within_limit is True, \"Use <= to include the limit.\""
+    }
+  ],
+  "15": [
+    {
+      "kind": "python",
+      "title": "Order if/elif branches",
+      "note": "The first matching branch wins; check high thresholds before lower thresholds.",
+      "example": "score = 95\nif score >= 90:\n    label = \"A\"\nelif score >= 80:\n    label = \"B\"\nelse:\n    label = \"C\"\nprint(label)",
+      "output": "A",
+      "challenge": "Set quality to High for 90+, Medium for 70+, otherwise Low (score=75).",
+      "starter": "score = 75\nquality = None\n# Add branches\nprint(quality)",
+      "solution": "score = 75\nif score >= 90:\n    quality = \"High\"\nelif score >= 70:\n    quality = \"Medium\"\nelse:\n    quality = \"Low\"\nprint(quality)",
+      "check": "assert quality == \"Medium\", \"Use an ordered elif ladder.\""
+    }
+  ],
+  "16": [
+    {
+      "kind": "python",
+      "title": "Nested if blocks",
+      "note": "An inner test runs only after the outer condition is true.",
+      "example": "number = 10\nif number > 0:\n    if number % 2 == 0:\n        print(\"Positive even\")",
+      "output": "Positive even",
+      "challenge": "Set label to Positive odd when x is 7, using nested conditions.",
+      "starter": "x = 7\nlabel = \"\"\nprint(label)",
+      "solution": "x = 7\nif x > 0:\n    if x % 2 != 0:\n        label = \"Positive odd\"\nprint(label)",
+      "check": "assert label == \"Positive odd\", \"Test positivity and parity.\""
+    }
+  ],
+  "17": [
+    {
+      "kind": "python",
+      "title": "and, or, and not",
+      "note": "and requires both, or requires either, not negates; short-circuiting may skip later checks.",
+      "example": "print(True and False)\nprint(True or False)\nprint(not True)",
+      "output": "False\nTrue\nFalse",
+      "challenge": "Set accepted True for score >=80 OR manual approval, unless blocked.",
+      "starter": "score = 70\nmanual = True\nblocked = False\naccepted = False\nprint(accepted)",
+      "solution": "score = 70\nmanual = True\nblocked = False\naccepted = (score >= 80 or manual) and not blocked\nprint(accepted)",
+      "check": "assert accepted is True, \"Combine or and not.\""
+    }
+  ],
+  "18": [
+    {
+      "kind": "python",
+      "title": "Conditional expressions",
+      "note": "Use value_if_true if condition else value_if_false for a simple assignment.",
+      "example": "number = 11\nprint(\"Even\" if number % 2 == 0 else \"Odd\")",
+      "output": "Odd",
+      "challenge": "Set size to large if count >= 10, otherwise small.",
+      "starter": "count = 12\nsize = None\nprint(size)",
+      "solution": "count = 12\nsize = \"large\" if count >= 10 else \"small\"\nprint(size)",
+      "check": "assert size == \"large\", \"Use a conditional expression.\""
+    }
   ]
 };
