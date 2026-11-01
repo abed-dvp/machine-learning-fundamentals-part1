@@ -676,19 +676,7 @@ button:disabled {
   }
 }
 
-/* Course-specific additions; reference layout remains unchanged. */
-.walkthrough-heading { margin:22px 0 10px; font-size:1rem; }
-.walkthrough-list { color:var(--muted); padding-left:22px; }
-.module-divider { padding:18px 14px 8px; margin-top:6px; color:var(--muted); text-transform:uppercase; font-size:.66rem; letter-spacing:.07em; font-weight:750; }
-.knowledge-check { padding:22px 24px; background:var(--surface); border:1px solid var(--border); border-radius:14px; }
-.knowledge-check > p:not(.eyebrow) { line-height:1.7; }
-.quiz-choices { display:grid; gap:10px; margin:16px 0; }
-.quiz-choice { text-align:left; border:1px solid var(--border); border-radius:10px; background:var(--surface); color:var(--text); padding:12px 14px; cursor:pointer; }
-.quiz-choice:hover:not(:disabled) { border-color:var(--accent); }
-.quiz-choice.correct { background:var(--success-soft); color:var(--success); border-color:var(--success); }
-.quiz-choice.wrong { border-color:#d85b5b; }
-.quiz-choice:disabled { cursor:default; }
-.quiz-feedback { color:var(--muted); min-height:1.5em; margin-bottom:0; }
-.quiz-feedback.success { color:var(--success); }
-.quiz-feedback.failure { color:#c94f4f; }
-@media(max-width:640px) {.knowledge-check{padding:18px}.module-divider{padding-left:10px}}
+/* Course-specific navigation additions. Other styles match the reference Codelab. */
+.module-divider{padding:18px 14px 8px;margin-top:4px;font-size:.66rem;letter-spacing:.055em;text-transform:uppercase;color:var(--muted);font-weight:750;line-height:1.5}
+.time-link{cursor:default}
+@media(max-width:620px){.module-divider{padding-left:10px}}

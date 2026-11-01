@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Abed Codelab: interactive Python-first course from three Machine Learning Fundamentals lecture decks.">
+  <title>Abed Codelab — Machine Learning Fundamentals · Part 1</title>
+  <link rel="stylesheet" href="./styles.css?v=20261101-part1">
+</head>
+<body>
+  <header class="topbar">
+    <button class="menu-button" id="menuButton" aria-label="Open navigation">☰</button>
+    <div class="brand">
+      <div class="brand-mark">A</div>
+      <div>
+        <strong>Abed Codelab</strong>
+        <span>Machine Learning Fundamentals · Part 1</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a href="../README.md" class="ghost-link" target="_blank">README</a>
+      <a href="../STUDY_GUIDE.md" class="ghost-link" target="_blank">Study Guide</a>
+      <button id="themeButton" class="icon-button" aria-label="Toggle theme">◐</button>
+    </div>
+  </header>
+
+  <div class="progress-shell" aria-label="Course progress">
+    <div id="progressBar" class="progress-bar"></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-head">
+        <p class="eyebrow">18 STEPS · 3 LECTURES</p>
+        <h2>Python for AI</h2>
+        <p id="progressText">0 of 18 complete</p>
+      </div>
+      <nav id="stepNav" class="step-nav" aria-label="Codelab steps"></nav>
+      <div class="sidebar-footer">
+        <button id="resetProgress" class="text-button">Reset progress</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <article class="lesson-card">
+        <div class="lesson-meta">
+          <span id="stepNumber" class="step-pill"></span>
+          <span id="videoTime" class="time-link"></span>
+        </div>
+
+        <h1 id="lessonTitle"></h1>
+        <p id="lessonIntro" class="lead"></p>
+
+        <section>
+          <h2>Learn</h2>
+          <ul id="learnBullets" class="learn-list"></ul>
+        </section>
+
+        <section>
+          <div class="section-head">
+            <h2>Example</h2>
+            <button class="copy-button" data-copy="exampleCode">Copy</button>
+          </div>
+          <pre><code id="exampleCode"></code></pre>
+          <div class="output-block">
+            <span>Expected output</span>
+            <pre><code id="expectedOutput"></code></pre>
+          </div>
+        </section>
+
+        <section class="try-section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">YOUR TURN</p>
+              <h2>Try it</h2>
+            </div>
+          </div>
+          <p id="challengeText"></p>
+          <div class="runtime-status" id="runtimeStatus" role="status" aria-live="polite">
+            <span class="runtime-dot loading" id="runtimeDot"></span>
+            <span id="runtimeText">Loading Python runtime…</span>
+          </div>
+
+          <textarea id="starterCode" spellcheck="false" aria-label="Practice Python code"></textarea>
+
+          <div class="try-actions">
+            <button id="runPython" class="primary-button" disabled>▶ Run Python</button>
+            <button id="checkAnswer" class="check-button" disabled>✓ Check answer</button>
+            <button id="resetCode" class="secondary-button">Reset code</button>
+            <button id="solutionButton" class="secondary-button">Show solution</button>
+          </div>
+
+          <div class="run-panel" id="runPanel" aria-live="polite">
+            <div class="run-panel-head">
+              <div>
+                <span class="terminal-label">PYTHON OUTPUT</span>
+                <span class="execution-state" id="executionState">Ready when Python loads</span>
+              </div>
+              <button id="clearOutput" class="text-button">Clear</button>
+            </div>
+            <pre class="terminal"><code id="runOutput">Python runtime is loading…</code></pre>
+            <div id="checkFeedback" class="check-feedback" hidden></div>
+          </div>
+
+          <div id="solutionPanel" class="solution-panel" hidden>
+            <div class="section-head">
+              <strong>One possible solution</strong>
+              <button class="copy-button" data-copy="solutionCode">Copy</button>
+            </div>
+            <pre><code id="solutionCode"></code></pre>
+          </div>
+        </section>
+
+        <section class="takeaway">
+          <p class="eyebrow">KEY TAKEAWAY</p>
+          <p id="takeawayText"></p>
+        </section>
+
+        <div class="lesson-footer">
+          <button id="prevButton" class="secondary-button">← Previous</button>
+          <button id="completeButton" class="complete-button">Mark step complete</button>
+          <button id="nextButton" class="primary-button">Next →</button>
+        </div>
+      </article>
+    </main>
+  </div>
+
+  <script src="./steps.js?v=20261101-part1"></script>
+  <script src="./app.js?v=20261101-part1"></script>
+</body>
+</html>

@@ -1,111 +1,55 @@
-# Machine Learning Fundamentals · Python-First Codelab
+# Machine Learning Fundamentals — Part 1
 
-A concise, **hands-on self-study course** distilled from six supplied lecture decks (191 slides). It focuses on the concepts a junior AI/ML engineer must understand and the Python techniques needed to apply them—without reproducing every slide.
+**Abed Codelab · Python-first, self-study, 18 interactive steps.**
 
-**[Open the Codelab](./index.html)** · [Practical review exercises](./PRACTICE.md) · [Local end-to-end pipeline](./labs/final_pipeline.py)
+[Open the interactive Codelab](https://abed-dvp.github.io/machine-learning-fundamentals-part1/codelab/)
 
-## Scope and learning outcomes
+Inspired by the learning interface of [Python As Fast As Possible](https://github.com/abed-dvp/python-as-fast-as-possible): side navigation, concise explanation, example, expected output, editable Python challenge, **Run Python**, **Check answer**, optional solution, saved progress, and light/dark mode.
 
-This batch covers introductory AI, knowledge representation, Bayesian reasoning, graph search, optimization, game-tree search, and practical data preparation. Some modules are broader *AI* topics rather than machine-learning algorithms; they remain included because they are in the course materials.
+## Source lectures
 
-| Source deck | Essential coverage | Python emphasis |
-|---|---|---|
-| `1.pptx` (30 slides) | AI vs ML vs DL; types of learning; model training | Learn a tiny threshold, fit a simple line |
-| `2.pptx` (36) | Logic, inference, semantic networks | Forward chaining, graph traversal |
-| `3.pptx` (34) | Priors/posteriors, conditional independence, DAGs | Bayes calculation, network factorization |
-| `4.pptx` (34) | BFS, DFS, A*, gradient descent | `deque`, `heapq`, gradient updates |
-| `5.pptx` (30) | Minimax, alpha-beta, MCTS basics | Recursion, pruning, random rollouts |
-| `6.pptx` (27) | Missing values, scaling, encoding, leakage | `pandas`, scikit-learn `Pipeline` |
+1. Introduction to Python Programming — 26 slides (Python setup, variables, operators, loops, functions, lambdas, OOP, exception handling)
+2. Variables and Data Types — 22 slides (numeric/string/Boolean types, lists, tuples, dicts, sets, mutability, scope)
+3. Conditions and If Statements — 20 slides (if/else, elif, nested if, and/or/not, conditional expression)
 
-There are **15 focused lessons**; most take 5–10 minutes. Each includes three key points, an engineering takeaway, editable Python, one challenge, and one quick knowledge check. Numbered slide references appear at the top of each lesson.
+The three uploaded lecture decks are the **topic basis**. The code examples, coding exercises, and engineering connections are newly authored teaching material. They are **not quotations from the slides**, and engineering connections are marked as added context. Repeated lecture topics are combined to reduce redundancy.
 
-## How to run
+## How to study
 
-### Option A — Browser Codelab
+Open the [Codelab](https://abed-dvp.github.io/machine-learning-fundamentals-part1/codelab/). In each step:
 
-Serve the folder with Python:
+1. Read **Learn** and **Example**, and check the expected output.
+2. Edit the **Try it** Python editor to solve the challenge.
+3. Click **Run Python**; the first run downloads Pyodide to execute Python in the browser, no login or server required.
+4. Click **Check answer** to run assertions against your solution. When tests pass, the step is marked complete.
+5. Use **Show solution** only after attempting the challenge.
 
-```bash
-cd machine-learning-fundamentals-codelab
-python -m http.server 8000
-```
+Progress and edited code are saved in your browser's local storage. Clearing browser data will remove them. The runtime is fetched from a CDN on first use; internet is required at least for that initial load. This is a client-side learning environment, not a secure execution sandbox for untrusted code.
 
-Open **http://localhost:8000**. The lesson text works offline after files are available. **Run Python** lazily downloads Pyodide when you first click it, so the first execution needs an internet connection. `pandas` / `scikit-learn` lessons load extra packages and take longer on first run. The runtime executes on the browser's main thread (no classic Web Workers). This is an educational client-side Python runner, not a secure execution sandbox for untrusted code.
+## Run code locally
 
-### Option B — Local Python for the final ML pipeline
-
-From this directory:
-
-```bash
-python -m venv .venv
-```
-
-Activate it:
+Python 3.11+ is recommended. Code uses only the standard library; no pip packages are needed.
 
 ```powershell
-# Windows PowerShell
-.venv\Scripts\Activate.ps1
+python --version
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -c "print('Hello, Machine Learning!')"
 ```
 
-```bash
-# macOS / Linux
-source .venv/bin/activate
-```
+On macOS/Linux, activate with `source .venv/bin/activate`.
 
-Install dependencies:
+For more detail, read [STUDY_GUIDE.md](STUDY_GUIDE.md).
 
-```bash
-python -m pip install -r requirements.txt
-python labs/final_pipeline.py
-```
+## Files
 
-The script generates **synthetic data** with a fixed seed, splits before fitting transforms, and measures held-out performance. Results depend on package versions but should show a working train/test pipeline.
+- `index.html` — redirects to interactive Codelab.
+- `codelab/index.html` — reference-style Codelab layout.
+- `codelab/steps.js` — 18 lessons, exercises, and Python assertions.
+- `codelab/app.js` — navigation, progress, Python runner, answer checks, themes.
+- `codelab/styles.css` — reference-style responsive light/dark interface.
+- `STUDY_GUIDE.md` — local workflow and key concepts.
 
-## Engineering essentials — quick reference
+## Publishing
 
-| Technique | What it does | When to use it | Key pitfall |
-|---|---|---|---|
-| Train/test split | Reserves unseen data for evaluation | Every predictive ML project | Fitting preprocessing on test data |
-| `SimpleImputer` | Learns replacement values from training features | Missing numeric/categorical records | Treating missingness as harmless |
-| `StandardScaler` | Centers and rescales numeric features | KNN, SVM, gradient-based models | Assuming output lies in [0,1] |
-| `OneHotEncoder` | Converts categories into binary indicators | Non-ordinal categorical input | Unknown category crashes without `handle_unknown` |
-| `Pipeline` | Keeps fit/transform/predict steps together | Reproducible training and inference | Manual steps drifting between train/test |
-| BFS / DFS | Traverses graphs with queue / stack | Pathfinding, state exploration | DFS is not shortest-path by default |
-| A* | Prioritizes g(n)+h(n) | Weighted route planning | Overestimating heuristics can lose optimality |
-| Gradient descent | Updates weights to reduce loss | Optimizer mechanics | Unstable learning rate |
-| Bayesian update | Converts prior + evidence to posterior | Decisions under uncertainty | Ignoring base rates and assumptions |
-| Alpha-beta | Skips game-tree branches | Competitive search | Move order changes speed, not result |
-
-## What we deliberately compressed
-
-The course briefly references the timeline of AI, speculative AI capability categories, framework histories, edge AI, ontology formalisms, advanced Bayesian-network extensions, evolutionary optimization, tabu search, and swarm methods. These are worth recognizing, but this batch prioritizes the Python implementations and modeling choices most transferable to engineering practice.
-
-## Important distinctions
-
-- A Bayesian-network edge represents a *modeled conditional dependency*. Causal claims require stronger assumptions; do not infer causality just from an arrow.
-- The rollout lab introduces one component of **MCTS**, not a full MCTS implementation.
-- Data in demonstrations is **synthetic** and not for clinical, financial, or product decision-making.
-- The sklearn example is a **baseline workflow**, not a production-ready ML service. Production also needs validation, schema checks, monitoring, and versioned artifacts.
-
-## Repository layout
-
-```text
-machine-learning-fundamentals-codelab/
-├── index.html         # Interactive reader and Python editor
-├── styles.css         # Responsive light/dark design
-├── lessons.js         # 15 curated lessons with source slide references
-├── app.js             # Navigation, code execution, knowledge checks
-├── README.md          # Concise independent reference
-├── PRACTICE.md        # 6 recap exercises
-├── LESSONS.md         # Readable lessons + Python snippets
-├── requirements.txt   # Local ML dependencies
-├── labs/
-│   └── final_pipeline.py
-└── .nojekyll          # GitHub Pages compatibility
-```
-
-## Deploy to GitHub Pages
-
-Push the folder contents to a GitHub repository. Go to **Settings → Pages → Deploy from a branch**, select **main / (root)**, and save. The website will be served as a static page; no server or API key is required.
-
-*Based on the six lecture files supplied for this project. Explanations and runnable examples are independently authored. Source deck slide numbers are shown within each lesson.*
+GitHub Pages: Settings → Pages → Build and deployment → Deploy from a branch → `main` / `/(root)`. The interactive URL ends in `/codelab/`. If Pages has not been enabled, the GitHub link works but the live-site URL will not until it is enabled.

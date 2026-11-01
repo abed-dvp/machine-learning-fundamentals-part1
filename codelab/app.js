@@ -1,8 +1,8 @@
 'use strict';
 
 const steps = window.CODELAB_STEPS;
-// Source slide locations are stored per lesson.
-const storageKey = 'abed-codelab-mlf-part1-state-v2';
+const modules = window.CODELAB_MODULES;
+const storageKey = 'abed-codelab-mlf-part1-python-lectures-v1';
 const themeKey = 'abed-codelab-theme';
 
 let currentIndex = 0;
@@ -106,14 +106,14 @@ def __abed_run(code, test_code=""):
 async function initPythonRuntime() {
   if (pythonReady && pyodide) return pyodide;
   try {
-    els.runtimeText.textContent = 'Loading Python engine (first run needs internet)…';
+    els.runtimeText.textContent = 'Loading Python (first run needs internet)…';
     els.executionState.textContent = 'Loading Python…';
     if (typeof window.loadPyodide !== 'function') {
-      await new Promise(function(resolve, reject) {
+      await new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js';
         script.onload = resolve;
-        script.onerror = function() { reject(new Error('Could not download Pyodide. Check your internet connection.')); };
+        script.onerror = () => reject(new Error('Could not load Pyodide from CDN; check your connection.'));
         document.head.appendChild(script);
       });
     }
@@ -122,13 +122,14 @@ async function initPythonRuntime() {
     const version = pyodide.runPython('import sys; sys.version.split()[0]');
     pythonReady = true;
     els.runtimeDot.className = 'runtime-dot ready';
-    els.runtimeText.textContent = 'Python ' + String(version) + ' ready in browser';
+    els.runtimeText.textContent = 'Python ' + version + ' ready in browser';
+    els.executionState.textContent = 'Ready';
     return pyodide;
-  } catch(error) {
+  } catch (error) {
     pythonReady = false;
+    const detail = error?.message || String(error);
     els.runtimeDot.className = 'runtime-dot error';
-    const message = error && error.message ? error.message : String(error);
-    els.runtimeText.textContent = 'Python unavailable — ' + message;
+    els.runtimeText.textContent = 'Python runtime unavailable — ' + detail;
     els.executionState.textContent = 'Runtime error';
     throw error;
   }
@@ -136,14 +137,12 @@ async function initPythonRuntime() {
 
 async function executePython(code, testCode) {
   if (!pythonReady || !pyodide) await initPythonRuntime();
-  els.runtimeText.textContent = 'Loading required Python packages / running…';
-  await pyodide.loadPackagesFromImports(code);
+  // All lessons use the Python standard library. No extra packages are required.
   pyodide.globals.set('__abed_user_code', code);
   pyodide.globals.set('__abed_test_code', testCode || '');
   try {
-    const result = await pyodide.runPythonAsync('json.dumps(__abed_run(__abed_user_code, __abed_test_code))');
-    els.runtimeText.textContent = 'Python ready in browser';
-    return JSON.parse(String(result));
+    const jsonResult = await pyodide.runPythonAsync('json.dumps(__abed_run(__abed_user_code, __abed_test_code))');
+    return JSON.parse(String(jsonResult));
   } finally {
     try { pyodide.globals.delete('__abed_user_code'); pyodide.globals.delete('__abed_test_code'); } catch {}
   }
@@ -151,7 +150,7 @@ async function executePython(code, testCode) {
 
 function setRunning(isRunning, label) {
   els.runPython.disabled = isRunning;
-  els.checkAnswer.disabled = isRunning || !Boolean(steps[currentIndex].check);
+  els.checkAnswer.disabled = isRunning;
   els.executionState.textContent = label || (isRunning ? 'Running…' : 'Ready');
 }
 
@@ -194,10 +193,10 @@ function renderNav() {
   els.stepNav.innerHTML = '';
 
   steps.forEach(function(step, index) {
-    if (index === 0 || steps[index - 1].unit !== step.unit) {
+    if (index === 0 || steps[index-1].unit !== step.unit) {
       const heading = document.createElement('div');
       heading.className = 'module-divider';
-      heading.textContent = 'Module ' + step.unit + ' · ' + window.MODULES[step.unit - 1].title;
+      heading.textContent = 'Lecture ' + step.unit + ' · ' + modules[step.unit-1].title;
       els.stepNav.appendChild(heading);
     }
     const button = document.createElement('button');
@@ -229,8 +228,7 @@ function renderLesson() {
   const step = steps[currentIndex];
 
   els.stepNumber.textContent = 'Step ' + step.id + ' of ' + steps.length;
-  els.videoTime.textContent = 'Source: ' + step.slides + ' · ' + step.time;
-  els.videoTime.href = './LESSONS.md';
+  els.videoTime.textContent = step.slides + ' · ' + step.time;
   els.lessonTitle.textContent = step.title;
   els.lessonIntro.textContent = step.learn;
 
@@ -241,14 +239,6 @@ function renderLesson() {
     els.learnBullets.appendChild(li);
   });
 
-  const walkthrough = document.getElementById('walkthroughBullets');
-  walkthrough.replaceChildren();
-  step.walkthrough.forEach(function(line) {
-    const li = document.createElement('li'); li.textContent = line; walkthrough.appendChild(li);
-  });
-  renderQuiz(step);
-  els.checkAnswer.hidden = !Boolean(step.check);
-  els.checkAnswer.disabled = !Boolean(step.check);
   els.exampleCode.textContent = step.example;
   els.expectedOutput.textContent = step.output;
   els.challengeText.textContent = step.challenge;
@@ -265,8 +255,8 @@ function renderLesson() {
   els.runOutput.classList.remove('error-output');
   els.runOutput.textContent = pythonReady
     ? 'Run your Python code to see the output.'
-    : 'Click Run Python to load the browser runtime and execute your code.';
-  els.executionState.textContent = pythonReady ? 'Ready' : 'Ready to load Python';
+    : 'Click Run Python to load the browser runtime.';
+  els.executionState.textContent = pythonReady ? 'Ready' : 'Ready to load';
 
   els.prevButton.disabled = currentIndex === 0;
   els.nextButton.disabled = currentIndex === steps.length - 1;
@@ -274,33 +264,6 @@ function renderLesson() {
   const done = Boolean(state.completed[step.id]);
   els.completeButton.textContent = done ? 'Completed ✓' : 'Mark step complete';
   els.completeButton.classList.toggle('completed', done);
-}
-
-function renderQuiz(step) {
-  const question = document.getElementById('quizQuestion');
-  const choices = document.getElementById('quizChoices');
-  const feedback = document.getElementById('quizFeedback');
-  question.textContent = step.quiz[0];
-  feedback.textContent = '';
-  feedback.className = 'quiz-feedback';
-  choices.replaceChildren();
-  [1, 2, 3].forEach(function(option) {
-    const button = document.createElement('button');
-    button.className = 'quiz-choice';
-    button.textContent = step.quiz[option];
-    button.addEventListener('click', function() {
-      const selected = option - 1;
-      const correct = step.quiz[4];
-      [...choices.children].forEach(function(choice, index) {
-        choice.disabled = true;
-        choice.classList.toggle('correct', index === correct);
-        choice.classList.toggle('wrong', index === selected && selected !== correct);
-      });
-      feedback.className = 'quiz-feedback ' + (selected === correct ? 'success' : 'failure');
-      feedback.textContent = (selected === correct ? 'Correct. ' : 'Not quite. ') + step.quiz[5];
-    });
-    choices.appendChild(button);
-  });
 }
 
 function renderProgress() {
@@ -432,8 +395,8 @@ els.clearOutput.addEventListener('click', function() {
   els.runOutput.classList.remove('error-output');
   els.runOutput.textContent = pythonReady
     ? 'Output cleared. Run your code again.'
-    : 'Click Run Python to load the browser runtime.';
-  els.executionState.textContent = pythonReady ? 'Ready' : 'Ready to load Python';
+    : 'Python runtime is loading…';
+  els.executionState.textContent = pythonReady ? 'Ready' : 'Loading Python…';
 });
 
 els.resetCode.addEventListener('click', function() {
@@ -474,7 +437,7 @@ els.completeButton.addEventListener('click', function() {
 
 els.resetProgress.addEventListener('click', function() {
   const confirmed = window.confirm(
-    'Reset completion progress and practice code for all 15 lessons?'
+    'Reset completion progress and practice code for all 18 steps?'
   );
 
   if (!confirmed) return;
@@ -529,6 +492,9 @@ els.themeButton.addEventListener('click', function() {
 });
 
 render();
-els.runtimeText.textContent = 'Python loads on first run · internet required';
 els.runPython.disabled = false;
-els.checkAnswer.disabled = !Boolean(steps[currentIndex].check);
+els.checkAnswer.disabled = false;
+els.runtimeDot.className = 'runtime-dot';
+els.runtimeText.textContent = 'Python loads on first run · internet required';
+els.executionState.textContent = 'Ready to load';
+els.runOutput.textContent = 'Click Run Python to load the browser runtime.';
